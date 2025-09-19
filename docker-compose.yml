@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: proejct_coffee
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+      TZ: Asia/Bangkok
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_project_coffee
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5059:80"
+    depends_on:
+      - postgres
+
+#  backend:
+#    build:
+#      context: ./backend
+#    container_name: my_backend
+#    restart: always
+#    env_file:
+#      - ./backend/.env
+#    ports:
+#      - "8083:8082"
+#    depends_on:
+#      - postgres
+#
+#  frontend:
+#    build:
+#      context: ./frontend
+#    container_name: my_frontend
+#    restart: always
+#    ports:
+#      - "5174:5173"
+#    depends_on:
+#      - backend
+
+volumes:
+  postgres_data:
+

@@ -1,0 +1,121 @@
+// This is your Prisma schema file
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  role_name   String   @unique
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_by  String?
+  updated_at  DateTime @updatedAt
+
+  users       User[]
+}
+
+model Category {
+  id            String   @id @default(uuid())
+  category_name String   @unique
+  created_by    String?
+  created_at    DateTime @default(now())
+  updated_by    String?
+  updated_at    DateTime @updatedAt
+
+  menus         Menu[]
+}
+
+model Menu {
+  id          String   @id @default(uuid())
+  category_id String
+  name        String
+  type        String?
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int?
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_by  String?
+  updated_at  DateTime @updatedAt
+
+  category    Category @relation(fields: [category_id], references: [id])
+  orderLists  OrderList[]
+
+  @@unique([category_id, name, type])
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  order_number   String   @unique
+  order_status   String
+  service        String
+  paymentChannel String
+  cus_id         String
+  created_by     String?
+  created_at     DateTime @default(now())
+  updated_by     String?
+  updated_at     DateTime @updatedAt
+
+  customer       Customer @relation(fields: [cus_id], references: [id])
+  orderLists     OrderList[]
+}
+
+model OrderList {
+  id          String   @id @default(uuid())
+  order_id    String
+  menu_id     String
+  price       Decimal   @db.Decimal(10, 2)
+  quantity    Int
+  remark      String?
+  status      String
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_by  String?
+  updated_at  DateTime @updatedAt
+
+  order       Order @relation(fields: [order_id], references: [id])
+  menu        Menu  @relation(fields: [menu_id], references: [id])
+
+  @@unique([order_id, menu_id])
+}
+
+model User {
+  id             String   @id @default(uuid())
+  emp_fname      String
+  emp_lname      String
+  emp_phone      String
+  emp_start_date String?
+  emp_status     String
+  role_id        String
+  username       String
+  password       String
+  created_by     String?
+  created_at     DateTime @default(now())
+  updated_by     String?
+  updated_at     DateTime @updatedAt
+
+  role           Role @relation(fields: [role_id], references: [id])
+
+  @@unique([emp_fname, emp_phone, username, emp_status])
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  cus_name    String
+  cus_phone   String
+  cus_status  String
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_by  String?
+  updated_at  DateTime @updatedAt
+
+  orders      Order[]
+
+  @@unique([cus_name, cus_phone])
+}

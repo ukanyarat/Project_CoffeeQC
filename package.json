@@ -11,5 +11,8 @@
   "devDependencies": {
     "turbo": "^2.0.0"
   },
-  "packageManager": "npm@10.9.2"
+  "packageManager": "npm@10.9.2",
+  "dependencies": {
+    "module-alias": "^2.2.3"
+  }
 }

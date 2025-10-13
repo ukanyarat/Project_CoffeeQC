@@ -28,8 +28,7 @@ export const categoryRouter = (() => {
                 console.error("Error in GET request:", error);
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
-        }
-    )
+        });
 
     //create
     router.post("/create",
@@ -46,8 +45,7 @@ export const categoryRouter = (() => {
                 console.error("Error in POST request:", error);
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
-        }
-    )
+        });
 
     //update
     router.patch("/update",
@@ -64,8 +62,7 @@ export const categoryRouter = (() => {
                 console.error("Error in POST request:", error);
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
-        }
-    )
+        });
 
     //delete
     router.delete("/delete/:id",
@@ -80,8 +77,7 @@ export const categoryRouter = (() => {
                 console.error("Error in DELETE request:", error);
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
-        }
-    )
+        });
 
     //getById
     router.get("/getById/:id",
@@ -96,8 +92,7 @@ export const categoryRouter = (() => {
                 console.error("Error in GET request:", error);
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
-        }
-    )
+        });
 
     //getAllNopaginate
     router.get("/getNoPaginate",

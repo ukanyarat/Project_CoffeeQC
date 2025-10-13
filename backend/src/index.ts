@@ -14,18 +14,6 @@ app.get("/", (req, res) => {
     res.send("Hello from Express backend 🚀");
 });
 
-// route ดึงข้อมูล
-app.get("/testDataTable", async (req, res) => {
-    try {
-        const data = await prisma.category.findMany();
-        res.json(data);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Something went wrong" });
-    }
-});
-
-
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

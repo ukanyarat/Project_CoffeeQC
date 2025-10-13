@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// Docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "windows"]
@@ -11,112 +8,228 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Role {
-  id          String   @id @default(uuid())
-  role_name   String   @unique
-  created_by  String?
-  created_at  DateTime @default(now())
-  updated_by  String?
-  updated_at  DateTime @updatedAt
-
-  users       User[]
-}
-
-model Category {
-  id            String   @id @default(uuid())
-  category_name String   @unique
-  created_by    String?
-  created_at    DateTime @default(now())
-  updated_by    String?
-  updated_at    DateTime @updatedAt
-
-  menus         Menu[]
-}
-
-model Menu {
-  id          String   @id @default(uuid())
-  category_id String
-  name        String
-  type        String?
-  price       Decimal   @db.Decimal(10, 2)
-  stock       Int?
-  created_by  String?
-  created_at  DateTime @default(now())
-  updated_by  String?
-  updated_at  DateTime @updatedAt
-
-  category    Category @relation(fields: [category_id], references: [id])
-  orderLists  OrderList[]
-
-  @@unique([category_id, name, type])
-}
-
-model Order {
-  id             String   @id @default(uuid())
-  order_number   String   @unique
-  order_status   String
-  service        String
-  paymentChannel String
-  cus_id         String
-  created_by     String?
-  created_at     DateTime @default(now())
-  updated_by     String?
-  updated_at     DateTime @updatedAt
-
-  customer       Customer @relation(fields: [cus_id], references: [id])
-  orderLists     OrderList[]
-}
-
-model OrderList {
-  id          String   @id @default(uuid())
-  order_id    String
-  menu_id     String
-  price       Decimal   @db.Decimal(10, 2)
-  quantity    Int
-  remark      String?
-  status      String
-  created_by  String?
-  created_at  DateTime @default(now())
-  updated_by  String?
-  updated_at  DateTime @updatedAt
-
-  order       Order @relation(fields: [order_id], references: [id])
-  menu        Menu  @relation(fields: [menu_id], references: [id])
-
-  @@unique([order_id, menu_id])
-}
-
 model User {
-  id             String   @id @default(uuid())
+  id             String   @id @default(uuid())  @db.Uuid
+  company_id     String?   @db.Uuid
   emp_fname      String
   emp_lname      String
   emp_phone      String
   emp_start_date String?
   emp_status     String
-  role_id        String
-  username       String
+  role_id        String   @db.Uuid
+  username       String   @unique
   password       String
-  created_by     String?
+  created_by     String?   @db.Uuid
   created_at     DateTime @default(now())
-  updated_by     String?
+  updated_by     String?  @db.Uuid
   updated_at     DateTime @updatedAt
 
-  role           Role @relation(fields: [role_id], references: [id])
+  role           Role     @relation(fields: [role_id], references: [id])
+  company        Company?  @relation(fields: [company_id], references: [id])
+
+  // คสพ.บริษัท
+  companies_created Company[] @relation("CompanyCreatedBy")
+  companies_updated Company[] @relation("CompanyUpdatedBy")
+
+  // คสพ.ตำแหน่ง
+  roles_created Role[] @relation("RoleCreatedBy")
+  roles_updated Role[] @relation("RoleUpdatedBy")
+
+  // คสพ.หมวดหมู่
+  categories_created Category[] @relation("CategoryCreatedBy")
+  categories_updated Category[] @relation("CategoryUpdatedBy")
+
+  // คสพ.เมนู
+  menus_created Menu[] @relation("MenuCreatedBy")
+  menus_updated Menu[] @relation("MenuUpdatedBy")
+
+  // คสพ.ใบสั่งซื้อ
+  orders_created Order[] @relation("OrderCreatedBy")
+  orders_updated Order[] @relation("OrderUpdatedBy")
+
+  // คสพ.รายการสั่ง
+  orderLists_created OrderList[] @relation("OrderListCreatedBy")
+  orderLists_updated OrderList[] @relation("OrderListUpdatedBy")
+
+  // คสพ.ลูกค้า
+  customers_created Customer[] @relation("CustomerCreatedBy")
+  customers_updated Customer[] @relation("CustomerUpdatedBy")
 
   @@unique([emp_fname, emp_phone, username, emp_status])
+  @@index([company_id])
+  @@index([role_id])
+  @@index([username])
+}
+
+model Company {
+  id                     String   @id @default(uuid()) @db.Uuid
+  company_code           String   @unique
+  company_name           String?  @unique
+  company_tel            String?
+  company_line           String?
+  company_contact_name   String?
+  company_contact_number String?
+  company_contact_line   String?
+  addr_number            String?
+  addr_alley             String?
+  addr_street            String?
+  addr_subdistrict       String?
+  addr_district          String?
+  addr_province          String?
+  addr_postcode          String?
+  remark                 String?
+  company_main           Boolean  @default(false)
+
+  created_at DateTime  @default(now())
+  created_by String?    @db.Uuid
+  updated_at DateTime? @updatedAt
+  updated_by String?   @db.Uuid
+
+  created_by_user User? @relation("CompanyCreatedBy", fields: [created_by], references: [id])
+  updated_by_user User? @relation("CompanyUpdatedBy", fields: [updated_by], references: [id])
+
+  users       User[]
+  roles       Role[]
+  categories  Category[]
+  menus       Menu[]
+  orders      Order[]
+  orderLists  OrderList[]
+  customers   Customer[]
+
+  @@unique([company_code, company_name])
+}
+
+model Role {
+  id          String   @id @default(uuid())  @db.Uuid
+  company_id  String   @db.Uuid
+  role_name   String   @unique
+  created_by  String?   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_by  String?  @db.Uuid
+  updated_at  DateTime @updatedAt
+
+  users             User[]
+  created_by_user   User?   @relation("RoleCreatedBy", fields: [created_by], references: [id])
+  updated_by_user   User?   @relation("RoleUpdatedBy", fields: [updated_by], references: [id])
+  company           Company @relation(fields: [company_id], references: [id])
+
+  @@index([role_name])
+  @@index([created_by])
+}
+
+model Category {
+  id            String   @id @default(uuid())  @db.Uuid
+  company_id    String   @db.Uuid
+  category_name String   @unique
+  created_by    String   @db.Uuid
+  created_at    DateTime @default(now())
+  updated_by    String?  @db.Uuid
+  updated_at    DateTime @updatedAt
+
+  company          Company @relation(fields: [company_id], references: [id])
+  created_by_user  User?   @relation("CategoryCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?   @relation("CategoryUpdatedBy", fields: [updated_by], references: [id])
+
+  menus            Menu[]
+
+  @@index([category_name])
+  @@index([company_id])
+}
+
+model Menu {
+  id          String   @id @default(uuid())  @db.Uuid
+  company_id  String   @db.Uuid
+  category_id String   @db.Uuid
+  name        String
+  type        String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int?
+  created_by  String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_by  String?  @db.Uuid
+  updated_at  DateTime @updatedAt
+
+  company          Company  @relation(fields: [company_id], references: [id])
+  category         Category @relation(fields: [category_id], references: [id])
+  created_by_user  User?    @relation("MenuCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?    @relation("MenuUpdatedBy", fields: [updated_by], references: [id])
+
+  orderLists       OrderList[]
+
+  @@unique([category_id, name, type])
+  @@index([category_id])
+  @@index([company_id])
+  @@index([name])
+}
+
+model Order {
+  id              String   @id @default(uuid())  @db.Uuid
+  company_id      String   @db.Uuid
+  order_number    String   @unique
+  order_status    String
+  service         String
+  payment_channel String
+  customer_id     String   @db.Uuid
+  created_by      String   @db.Uuid
+  created_at      DateTime @default(now())
+  updated_by      String?  @db.Uuid
+  updated_at      DateTime @updatedAt
+
+  customer         Customer @relation(fields: [customer_id], references: [id])
+  created_by_user  User?    @relation("OrderCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?    @relation("OrderUpdatedBy", fields: [updated_by], references: [id])
+  company          Company  @relation(fields: [company_id], references: [id])
+
+  orderLists       OrderList[]
+
+  @@index([order_number])
+  @@index([customer_id])
+  @@index([created_by])
+}
+
+model OrderList {
+  id          String   @id @default(uuid())  @db.Uuid
+  order_id    String   @db.Uuid
+  company_id  String   @db.Uuid
+  menu_id     String   @db.Uuid
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  remark      String?
+  status      String
+  created_by  String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_by  String?  @db.Uuid
+  updated_at  DateTime @updatedAt
+
+  order            Order   @relation(fields: [order_id], references: [id])
+  menu             Menu    @relation(fields: [menu_id], references: [id])
+  created_by_user  User?   @relation("OrderListCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?   @relation("OrderListUpdatedBy", fields: [updated_by], references: [id])
+  company          Company @relation(fields: [company_id], references: [id])
+
+  @@unique([order_id, menu_id])
+  @@index([order_id])
+  @@index([menu_id])
 }
 
 model Customer {
-  id          String   @id @default(uuid())
-  cus_name    String
-  cus_phone   String
-  cus_status  String
-  created_by  String?
+  id          String   @id @default(uuid())  @db.Uuid
+  company_id  String   @db.Uuid
+  customer_name    String
+  customer_phone   String
+  customer_status  String
+  created_by  String   @db.Uuid
   created_at  DateTime @default(now())
-  updated_by  String?
+  updated_by  String?  @db.Uuid
   updated_at  DateTime @updatedAt
 
-  orders      Order[]
+  company          Company @relation(fields: [company_id], references: [id])
+  created_by_user  User?   @relation("CustomerCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?   @relation("CustomerUpdatedBy", fields: [updated_by], references: [id])
 
-  @@unique([cus_name, cus_phone])
+  orders           Order[]
+
+  @@unique([customer_name, customer_phone])
+  @@index([company_id])
+  @@index([customer_phone])
 }

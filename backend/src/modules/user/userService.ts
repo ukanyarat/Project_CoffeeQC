@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 import { jwtGenerator } from "@common/utility/jwtGenerator";
 import { Response } from "express";
 
-
 export const userService = {
     login: async (payload: TypePayloadUser, res: Response) => {
         try {
@@ -92,5 +91,60 @@ export const userService = {
             )
         }
     },
+    authStatus: (req: any) => {
+        try {
+            const token = req.cookies.token;
+            if (token) {
+                return new ServiceResponse(
+                    ResponseStatus.Success,
+                    "User authenticated successfully",
+                    null,
+                    StatusCodes.OK
+                );
+            } else {
+                return new ServiceResponse(
+                    ResponseStatus.Success,
+                    "Authentication required",
+                    null,
+                    StatusCodes.OK
+                );
+            }
+        } catch (ex) {
+            const errorMessage = "Error auth status: " + (ex as Error).message;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
 
+    findById: async (companyId: string, userId: string) => {
+        try {
+            const user = await userRepository.findById(companyId, userId);
+            if (!user) {
+                return new ServiceResponse(
+                    ResponseStatus.Failed,
+                    "User not found",
+                    null,
+                    StatusCodes.NOT_FOUND
+                )
+            }
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "Get user success",
+                user,
+                StatusCodes.OK
+            )
+        } catch (ex) {
+            const errorMessage = `Error find user by id : ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            )
+        }
+    },
 }

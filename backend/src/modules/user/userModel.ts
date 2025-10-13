@@ -40,12 +40,12 @@ export const CreateUserSchema = z.object({
 
 export const UpdateUserSchema = z.object({
     body: z.object({
-        id: z.string().min(1, "id is required"),
+        id: z.string().uuid(),
     })
 })
 
 export const GetParamUserSchems = z.object({
     params: z.object({
-        id: z.string().min(1, "id is required").uuid(),
+        id: z.string().uuid(),
     })
 })

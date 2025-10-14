@@ -27,10 +27,10 @@ export const categoryRepository = {
                     }
                     : {}),
             },
-            select: {
-                id: true,
-                category_name: true,
-            },
+            // select: {
+            //     id: true,
+            //     category_name: true,
+            // },
             skip,
             take,
             orderBy: [

@@ -147,4 +147,147 @@ export const userService = {
             )
         }
     },
+    findAll: async (
+        companyId: string,
+        page: number = 1,
+        pageSize: number = 12,
+        searchText: string = "",
+    ) => {
+        try {
+            const skip = (page - 1) * pageSize;
+            const companyReceiving = await userRepository.findAll(
+                companyId,
+                skip,
+                pageSize,
+                searchText
+            );
+            const totalCount = await userRepository.count(companyId, searchText);
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "Get all user success",
+                {
+                    data: companyReceiving,
+                    totalCount,
+                    totalPages: Math.ceil(totalCount / pageSize),
+                },
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = "Error Find All user :" + (ex as Error).message;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
+    findAllNopaginate: async (companyId: string, userId: string) => {
+        try {
+            const categories = await userRepository.findAllNopaginate(companyId, userId);
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "User retrieved successfully",
+                categories,
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error retrieving user: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
+    create: async (companyId: string, userId: string, payload: TypePayloadUser) => {
+        try {
+            const user = await userRepository.create(companyId, userId, payload)
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "User created successfully",
+                user,
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error creating user: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
+    update: async (companyId: string, userId: string, payload: TypePayloadUser) => {
+        try {
+            const user = await userRepository.update(companyId, userId, payload)
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "User updated successfully",
+                user,
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error updating user: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
+    delete: async (id: string) => {
+        try {
+            await userRepository.delete(id)
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "User deleted successfully",
+                "User deleted successfully",
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error deleting user: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
+    getById: async (id: string) => {
+        try {
+            const user = await userRepository.getById(id);
+            if (!user) {
+                return new ServiceResponse(
+                    ResponseStatus.Failed,
+                    "User not found",
+                    null,
+                    StatusCodes.NOT_FOUND
+                );
+            }
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "User retrieved successfully",
+                user,
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error retrieving user: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
 }

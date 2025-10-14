@@ -2,6 +2,7 @@ import { ResponseStatus, ServiceResponse } from "@common/model/serviceResponse";
 import { StatusCodes } from "http-status-codes";
 import { orderRepository } from "./orderRepository";
 import { TypePayloadOrder } from "./orderModel";
+import { generateOrderNumber } from "./generateOrderNumber";
 
 
 export const orderService = {
@@ -63,6 +64,7 @@ export const orderService = {
 
     create: async (companyId: string, userId: string, payload: TypePayloadOrder) => {
         try {
+            payload.order_number = await generateOrderNumber(companyId);
             const order = await orderRepository.create(companyId, userId, payload)
             return new ServiceResponse(
                 ResponseStatus.Success,

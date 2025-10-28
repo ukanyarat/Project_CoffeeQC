@@ -1,0 +1,21 @@
+import fetch from 'node-fetch';
+
+export const USER_AGENT = "CoffeeQCApp/1.0";
+
+export async function makeNWSRequest<T>(url: string): Promise<T | null> {
+    console.log("MCP server started");
+
+    const headers = {
+        "User-Agent": USER_AGENT,
+        Accept: "application/geo+json",
+    };
+
+    try {
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return (await response.json()) as T;
+    } catch (error) {
+        console.error("Error making NWS request:", error);
+        return null;
+    }
+}

@@ -4,7 +4,6 @@
   "main": "index.ts",
   "scripts": {
     "dev": "tsx --watch -r tsconfig-paths/register -r module-alias/register src/index.ts",
-    "start": "tsx -r tsconfig-paths/register -r module-alias/register src/index.ts | pino-pretty",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
@@ -29,6 +28,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.1",
     "@prisma/client": "^6.17.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
@@ -38,9 +38,10 @@
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
+    "node-fetch": "^2.7.0",
     "pino": "^10.0.0",
     "uuid": "^13.0.0",
-    "zod": "^4.1.12"
+    "zod": "3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

@@ -5,19 +5,38 @@
     "backend"
   ],
   "scripts": {
-    "dev": "turbo run dev --parallel",
-    "build": "turbo run build"
+    "dev": "turbo dev",
+    "db:generate": "turbo run db:generate"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
+    "prisma": "^6.18.0",
     "tailwindcss": "^4.1.15",
     "turbo": "^2.0.0"
   },
   "packageManager": "npm@10.9.2",
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@prisma/client": "^6.18.0",
+    "antd": "^5.27.6",
     "framer-motion": "^12.23.24",
     "module-alias": "^2.2.3"
-  }
+  },
+  "name": "project_coffeeqc",
+  "version": "1.0.0",
+  "description": "npm run dev ที่ root จะได้ทั้ง frontend และ backend\r npm run dev ที่ frontend จะได้แค่ frontend\r npm run dev ที่ backend จะได้แค่ backend# Project_CoffeeQC\r # Project_CoffeeQC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ukanyarat/Project_CoffeeQC.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ukanyarat/Project_CoffeeQC/issues"
+  },
+  "homepage": "https://github.com/ukanyarat/Project_CoffeeQC#readme"
 }

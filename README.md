@@ -3,3 +3,11 @@ npm run dev ที่ root จะได้ทั้ง frontend และ backen
 npm run dev ที่ frontend จะได้แค่ frontend
 npm run dev ที่ backend จะได้แค่ backend# Project_CoffeeQC
 # Project_CoffeeQC
+
+
+
+
+ใช้งาน mcp
+> cd mcp
+> npm run dev
+เซิร์ฟเวอร์จะเริ่มทำงานที่ http://localhost:3002

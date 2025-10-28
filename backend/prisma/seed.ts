@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Category } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 import { role_name, category_name } from '../src/common/other/roleData';
 
 const prisma = new PrismaClient();
 
 async function main() {
+    const { v4: uuidv4 } = await import('uuid');
     //  Seed Company
     const company = await prisma.company.upsert({
         where: { company_code: "C0001" },
@@ -96,12 +96,42 @@ async function main() {
     });
 
     //  Seed Categories
+    const categories: Category[] = [];
     for (const cat of category_name) {
-        await prisma.category.upsert({
+        const category = await prisma.category.upsert({
             where: { category_name: cat },
             update: {},
             create: { company_id: companyId, category_name: cat, created_by: adminUserId },
         });
+        categories.push(category);
+    }
+
+    // Seed Menus
+    for (const category of categories) {
+        for (let i = 1; i <= 10; i++) {
+            const menuName = `${category.category_name} Menu ${i}`;
+            const menuType = category.category_name; // Assuming type is the same as category name
+            await prisma.menu.upsert({
+                where: {
+                    category_id_name_type: {
+                        category_id: category.id,
+                        name: menuName,
+                        type: menuType,
+                    }
+                },
+                update: {},
+                create: {
+                    name: menuName,
+                    price: Math.floor(Math.random() * 100) + 20,
+                    category_id: category.id,
+                    company_id: companyId,
+                    created_by: adminUserId,
+                    status: 'available',
+                    description: `Description for ${category.category_name} Menu ${i}`,
+                    type: menuType,
+                },
+            });
+        }
     }
 
     //  Seed Customer

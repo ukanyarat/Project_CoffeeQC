@@ -137,18 +137,29 @@ model Category {
 }
 
 model Menu {
-  id          String   @id @default(uuid())  @db.Uuid
-  company_id  String   @db.Uuid
-  category_id String   @db.Uuid
-  name        String
-  type        String?
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int?
-  created_by  String   @db.Uuid
-  created_at  DateTime @default(now())
-  updated_by  String?  @db.Uuid
-  updated_at  DateTime @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
 
+  // --- ข้อมูลหลัก ---
+  name        String // ชื่อเมนู (Menu_name)
+  description String? // คำอธิบายเมนู
+  image_url   String? // URL รูปภาพ (Menu_picture)
+  price       Decimal @db.Decimal(10, 2) // ราคา (Menu_price)
+  sku         String? @unique // รหัสสินค้า (SKU)
+
+  // --- การจัดหมวดหมู่และสต็อก ---
+  category_id String @db.Uuid // ID ของ Category
+  type        String? // ประเภท (เช่น 'เครื่องดื่ม', 'เบเกอรี่')
+  status      String  @default("available") // สถานะ ('available', 'sold_out', 'discontinued')
+  stock       Int? // จำนวนในสต็อก
+
+  // --- ข้อมูลระบบ ---
+  company_id String   @db.Uuid
+  created_by String   @db.Uuid
+  created_at DateTime @default(now())
+  updated_by String?   @db.Uuid
+  updated_at DateTime @updatedAt
+
+  // --- ความสัมพันธ์กับตารางอื่น ---
   company          Company  @relation(fields: [company_id], references: [id])
   category         Category @relation(fields: [category_id], references: [id])
   created_by_user  User?    @relation("MenuCreatedBy", fields: [created_by], references: [id])

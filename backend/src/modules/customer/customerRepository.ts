@@ -39,10 +39,14 @@ export const customerRepository = {
                     }
                     : {}),
             },
-            // select: {
-            //     id: true,
-            //     customer_name: true,
-            // },
+            select: {
+                id: true,
+                customer_name: true,
+                customer_phone: true,
+                customer_status: true,
+                created_at: true,
+                updated_at: true,
+            },
             skip,
             take,
             orderBy: [
@@ -91,7 +95,7 @@ export const customerRepository = {
                 company_id: companyId,
                 customer_name: payload.customer_name,
                 customer_phone: payload.customer_phone,
-                customer_status: payload.customer_status,
+                customer_status: payload.customer_status || 'active',
                 created_at: new Date(),
                 updated_at: new Date(),
                 created_by: userId,
@@ -159,6 +163,10 @@ export const customerRepository = {
             select: {
                 id: true,
                 customer_name: true,
+                customer_phone: true,
+                customer_status: true,
+                created_at: true,
+                updated_at: true,
             }
         })
     }

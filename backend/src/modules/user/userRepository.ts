@@ -4,13 +4,14 @@ import prisma from "@src/db";
 
 export const userRepository = {
     findByUser: async (payload: TypePayloadUser) => {
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: { username: payload.username },
             select: {
                 id: true,
                 company_id: true,
                 username: true,
                 password: true,
+                emp_fname: true,
                 role: {
                     select: {
                         role_name: true
@@ -107,10 +108,23 @@ export const userRepository = {
                     }
                     : {}),
             },
-            // select: {
-            //     id: true,
-            //     username: true,
-            // },
+            select: {
+                id: true,
+                emp_fname: true,
+                emp_lname: true,
+                emp_phone: true,
+                emp_start_date: true,
+                emp_status: true,
+                role_id: true,
+                username: true,
+                created_at: true,
+                updated_at: true,
+                role: {
+                    select: {
+                        role_name: true
+                    }
+                }
+            },
             skip,
             take,
             orderBy: [
@@ -263,7 +277,20 @@ export const userRepository = {
             },
             select: {
                 id: true,
+                emp_fname: true,
+                emp_lname: true,
+                emp_phone: true,
+                emp_start_date: true,
+                emp_status: true,
+                role_id: true,
                 username: true,
+                created_at: true,
+                updated_at: true,
+                role: {
+                    select: {
+                        role_name: true
+                    }
+                }
             }
         })
     }

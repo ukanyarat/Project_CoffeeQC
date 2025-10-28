@@ -34,7 +34,7 @@ export const userService = {
             }
             //กำหนดค่าโทเคน
             const uuid = checkUser.id;
-            const role = checkUser.role.role_name;
+            const role = checkUser.role?.role_name || "";
             const companyId = checkUser.company_id ?? "";
             const username = checkUser.username;
             const dataPayloadtoToken = {
@@ -54,7 +54,13 @@ export const userService = {
             return new ServiceResponse(
                 ResponseStatus.Success,
                 "User successfully authenticated and logged in",
-                { token: token },
+                {
+                    token: token,
+                    user: {
+                        name: checkUser.emp_fname,
+                        role: checkUser.role.role_name
+                    }
+                },
                 StatusCodes.OK
             )
         } catch (ex) {
@@ -205,7 +211,8 @@ export const userService = {
 
     create: async (companyId: string, userId: string, payload: TypePayloadUser) => {
         try {
-            const user = await userRepository.create(companyId, userId, payload)
+            const hashedPassword = await bcrypt.hash(payload.password, 10);
+            const user = await userRepository.create(companyId, userId, { ...payload, password: hashedPassword });
             return new ServiceResponse(
                 ResponseStatus.Success,
                 "User created successfully",
@@ -225,7 +232,11 @@ export const userService = {
 
     update: async (companyId: string, userId: string, payload: TypePayloadUser) => {
         try {
-            const user = await userRepository.update(companyId, userId, payload)
+            let updatedPayload = { ...payload };
+            if (payload.password) {
+                updatedPayload.password = await bcrypt.hash(payload.password, 10);
+            }
+            const user = await userRepository.update(companyId, userId, updatedPayload)
             return new ServiceResponse(
                 ResponseStatus.Success,
                 "User updated successfully",

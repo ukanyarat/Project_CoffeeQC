@@ -9,11 +9,21 @@ export const orderRepository = {
         companyId: string,
         skip: number,
         take: number,
-        searchText: string
+        searchText: string,
+        date?: Date // Add date parameter
     ) => {
+        const startOfDay = date ? new Date(date.setHours(0, 0, 0, 0)) : undefined;
+        const endOfDay = date ? new Date(date.setHours(23, 59, 59, 999)) : undefined;
+
         return await prisma.order.findMany({
             where: {
                 company_id: companyId,
+                ...(date && startOfDay && endOfDay ? {
+                    created_at: {
+                        gte: startOfDay,
+                        lte: endOfDay,
+                    },
+                } : {}),
                 ...(searchText
                     ? {
                         OR: [

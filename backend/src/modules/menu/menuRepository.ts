@@ -194,6 +194,8 @@ export const menuRepository = {
             select: {
                 id: true,
                 name: true,
+                price: true,
+                category_id: true,
             }
         })
     }

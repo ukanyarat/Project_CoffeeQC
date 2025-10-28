@@ -1,4 +1,5 @@
 {
+  "name": "mcp",
   "type": "module",
   "bin": {
     "weather": "./build/index.js"
@@ -18,7 +19,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
     "@prisma/client": "^6.18.0",
-    "@types/express": "^5.0.3",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "ts-node": "^10.9.2",
@@ -26,6 +29,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.13"
+    "@types/node-fetch": "^2.6.13",
+    "prisma": "^6.18.0"
   }
 }

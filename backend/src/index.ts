@@ -14,6 +14,7 @@ import { orderRouter } from "@modules/order/orderRouter";
 import { orderListRouter } from "@modules/orderList/orderListRouter";
 import { companyRouter } from "@modules/company/companyRouter";
 import { customerRouter } from "@modules/customer/customerRouter";
+import mcpRouter from "@modules/mcp/mcpRouter";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use("/v1/order", orderRouter);
 app.use("/v1/orderList", orderListRouter);
 app.use("/v1/company", companyRouter);
 app.use("/v1/customer", customerRouter);
+app.use("/v1/mcp", mcpRouter);
 
 // test route
 app.get("/", (req, res) => {

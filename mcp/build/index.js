@@ -1,72 +1,54 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from 'express';
-import { z } from "zod";
+import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-const NWS_API_BASE = "https://api.weather.gov";
-const USER_AGENT = "weather-app/1.0";
-const prisma = new PrismaClient();
-// Create server instance
-const server = new McpServer({
-    name: "weather",
-    version: "1.0.0",
-});
-server.registerTool('getCurrentWeather', {
-    description: "Get the current weather for a location",
-    inputSchema: {
-        latitude: z.number(),
-        longitude: z.number(),
-    },
-}, async ({ latitude, longitude }) => {
-    // NWS API requires a two-step process to get the weather.
-    // First, we need to get the gridpoint for the given lat/lon.
-    const gridpointUrl = `${NWS_API_BASE}/points/${latitude},${longitude}`;
-    const gridpointResponse = await fetch(gridpointUrl, {
-        headers: {
-            "User-Agent": USER_AGENT,
-        },
-    });
-    const gridpoint = await gridpointResponse.json();
-    const forecastUrl = gridpoint.properties.forecast;
-    // Then, we can get the forecast for that gridpoint.
-    const forecastResponse = await fetch(forecastUrl, {
-        headers: {
-            "User-Agent": USER_AGENT,
-        },
-    });
-    const forecast = await forecastResponse.json();
-    return {
-        content: [{ type: 'text', text: JSON.stringify(forecast.properties.periods[0]) }],
-        structuredContent: forecast.properties.periods[0]
-    };
-});
-server.registerTool('getCompanies', {
-    description: "Get a list of all companies from the database",
-}, async () => {
-    const companies = await prisma.company.findMany();
-    return {
-        content: [{ type: 'text', text: JSON.stringify(companies) }],
-        structuredContent: companies
-    };
-});
 const app = express();
+const port = 3002; // Port for the MCP service
+const prisma = new PrismaClient();
+app.use(cors());
 app.use(express.json());
-app.post('/mcp', async (req, res) => {
-    // Create a new transport for each request to prevent request ID collisions
-    const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined,
-        enableJsonResponse: true
-    });
-    res.on('close', () => {
-        transport.close();
-    });
-    await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+app.get('/', (req, res) => {
+    res.send('MCP Service is running and ready to connect to the database!');
 });
-const port = parseInt(process.env.PORT || '3001');
+app.post('/analyze', async (req, res) => {
+    const { question } = req.body;
+    if (!question) {
+        return res.status(400).json({ message: 'Question is required in the request body.' });
+    }
+
+    try {
+        let summary = '';
+
+        // ตัวอย่าง logic วิเคราะห์คำถามง่าย ๆ
+        if (question.includes('เมนู')) {
+            const menuCount = await prisma.menu.count();
+            summary = `มี ${menuCount} เมนูในฐานข้อมูล`;
+        } else if (question.includes('ยอดวันนี้')) {
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const total = await prisma.order.aggregate({
+                _sum: { amount: true },
+                where: { createdAt: { gte: startOfDay, lte: endOfDay } }
+            });
+            summary = `ยอดรวมวันนี้คือ ${total._sum.amount || 0} บาท`;
+        } else {
+            summary = 'ยังไม่สามารถตอบคำถามนี้ได้';
+        }
+
+        res.status(200).json({
+            message: "Successfully analyzed the data.",
+            question,
+            summary
+        });
+
+    } catch (error: any) {
+        console.error('Error during database query or analysis:', error.message);
+        res.status(500).json({ message: 'Failed to process request in MCP service.', error: error.message });
+    }
+});
+
 app.listen(port, () => {
-    console.log(`Demo MCP Server running on http://localhost:${port}/mcp`);
-}).on('error', error => {
-    console.error('Server error:', error);
-    process.exit(1);
+    console.log(`MCP service listening on port ${port}`);
 });

@@ -28,6 +28,12 @@ export const CreateMenuSchema = z.object({
 export const UpdateMenuSchema = z.object({
     body: z.object({
         id: z.string().uuid(),
+        category_id: z.string().uuid().optional(),
+        name: z.string().min(1, "name is required").max(50).optional(),
+        type: z.string().min(1, "type is required").max(50).optional(),
+        price: z.number().min(0).optional(),
+        stock: z.number().min(0).nullable().optional(),
+        status: z.string().optional(), // Allow status to be updated
     })
 })
 

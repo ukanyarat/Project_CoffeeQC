@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm } from 'antd';
+import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm, Tabs } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getMenus, getCategories, createMenu, updateMenu, deleteMenu } from '../../api';
 
 const { Title, Text } = Typography;
+const { Option, TabPane } = Select;
 
 interface Category {
   id: string;
@@ -76,7 +77,7 @@ const ProductsPage: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await deleteMenu(id);
+      const response = await updateMenu({ id, status: 'deleted' }); // Perform soft delete
       if (response.success) {
         messageApi.success('Menu item deleted successfully!');
         fetchMenusAndCategories();
@@ -95,10 +96,16 @@ const ProductsPage: React.FC = () => {
       const values = await form.validateFields();
       setLoading(true);
       let response;
+
+      const payload = {
+        ...values,
+        status: values.status || 'available', // Default to 'available' if not provided
+      };
+
       if (editingMenu) {
-        response = await updateMenu({ ...values, id: editingMenu.id });
+        response = await updateMenu({ ...payload, id: editingMenu.id });
       } else {
-        response = await createMenu(values);
+        response = await createMenu(payload);
       }
 
       if (response.success) {
@@ -122,7 +129,7 @@ const ProductsPage: React.FC = () => {
   };
 
   return (
-    <Card>
+    <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       {contextHolder}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
@@ -136,15 +143,11 @@ const ProductsPage: React.FC = () => {
       </Row>
 
       <Spin spinning={loading}>
-        {categories.map(category => {
-          const categoryMenus = menus.filter(menu => menu.category_id === category.id);
-          if (categoryMenus.length === 0) return null; // Don't show category if no menus
-
-          return (
-            <div key={category.id} style={{ marginBottom: 24 }}>
-              <Title level={4}>{category.category_name}</Title>
+        <Tabs defaultActiveKey={categories[0]?.id} onChange={key => console.log('Selected tab:', key)}>
+          {categories.map(category => (
+            <TabPane tab={category.category_name} key={category.id}>
               <Row gutter={[16, 16]}>
-                {categoryMenus.map(menu => (
+                {menus.filter(menu => menu.category_id === category.id).map(menu => (
                   <Col key={menu.id} xs={24} sm={12} md={8} lg={6}>
                     <Card
                       hoverable
@@ -175,9 +178,9 @@ const ProductsPage: React.FC = () => {
                   </Col>
                 ))}
               </Row>
-            </div>
-          );
-        })}
+            </TabPane>
+          ))}
+        </Tabs>
       </Spin>
 
       <Modal
@@ -211,7 +214,7 @@ const ProductsPage: React.FC = () => {
           <Form.Item
             name="type"
             label="Type"
-            rules={[{ required: true, message: 'Please input the product type!' }]}
+          // rules={[{ required: true, message: 'Please input the product type!' }]}
           >
             <Input />
           </Form.Item>
@@ -220,7 +223,7 @@ const ProductsPage: React.FC = () => {
             label="Price"
             rules={[{ required: true, message: 'Please input the price!' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} formatter={value => `${value} THB`} parser={value => value ? parseFloat(value.replace(' THB', '')) : 0} />
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             name="stock"

@@ -138,7 +138,7 @@ const CustomersPage: React.FC = () => {
   ];
 
   return (
-    <Card>
+    <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Title level={3}>Customers Management</Title>

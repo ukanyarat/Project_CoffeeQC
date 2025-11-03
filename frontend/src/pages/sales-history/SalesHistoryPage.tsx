@@ -38,32 +38,31 @@ interface OrderListItem {
   created_at: string;
 }
 
-const TodaysOrdersPage: React.FC = () => {
+const SalesHistoryPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [orderListItems, setOrderListItems] = useState<{ [orderId: string]: OrderListItem[] }>({});
 
-  const fetchTodaysOrders = async () => {
+  const fetchAllOrders = async () => {
     setLoading(true);
     try {
-      const today = moment().format('YYYY-MM-DD');
-      const ordersResponse = await getOrders({ date: today });
+      const ordersResponse = await getOrders();
 
       if (ordersResponse.success && ordersResponse.responseObject?.data) {
         setOrders(ordersResponse.responseObject.data);
       } else {
-        message.error(ordersResponse.message || 'Failed to fetch today\'s orders.');
+        message.error(ordersResponse.message || 'Failed to fetch orders.');
       }
     } catch (error: any) {
-      message.error('Error fetching today\'s orders: ' + error.message);
+      message.error('Error fetching orders: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTodaysOrders();
+    fetchAllOrders();
   }, []);
 
   const fetchOrderListForOrder = async (orderId: string) => {
@@ -152,7 +151,7 @@ const TodaysOrdersPage: React.FC = () => {
 
   return (
     <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-      <Title level={3}>Today's Orders</Title>
+      <Title level={3}>Sales History</Title>
       <Spin spinning={loading}>
         <Table
           columns={orderColumns}
@@ -178,4 +177,4 @@ const TodaysOrdersPage: React.FC = () => {
   );
 };
 
-export default TodaysOrdersPage;
+export default SalesHistoryPage;

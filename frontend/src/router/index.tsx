@@ -8,9 +8,7 @@ import TodaysOrdersPage from "../pages/todays-orders/TodaysOrdersPage";
 import ProductsPage from "../pages/products/ProductsPage";
 import CustomersPage from "../pages/customers/CustomersPage";
 import EmployeesPage from "../pages/employees/EmployeesPage";
-
-// Placeholder components for demonstration
-const SalesHistory = () => <div>ประวัติการขาย Page</div>;
+import SalesHistoryPage from "../pages/sales-history/SalesHistoryPage";
 
 const router = createBrowserRouter([
     {
@@ -29,7 +27,7 @@ const router = createBrowserRouter([
                     { path: "take-order", element: <TakeOrderPage /> },
                     { path: "todays-orders", element: <TodaysOrdersPage /> },
                     { path: "products", element: <ProductsPage /> },
-                    { path: "sales-history", element: <SalesHistory /> },
+                    { path: "sales-history", element: <SalesHistoryPage /> },
                     { path: "customers", element: <CustomersPage /> },
                     { path: "employees", element: <EmployeesPage /> },
                 ]

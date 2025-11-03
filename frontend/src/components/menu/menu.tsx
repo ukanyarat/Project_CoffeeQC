@@ -41,10 +41,11 @@ const allMenuItems: MenuItem[] = [
   getItem(<Link to="/sales-history">ประวัติการขาย</Link>, '4', <FileOutlined />),
   getItem(<Link to="/customers">รายชื่อลูกค้า</Link>, '5', <TeamOutlined />),
   getItem(<Link to="/employees">รายชื่อพนักงาน</Link>, '6', <UserOutlined />),
+  getItem(<Link to="/">คุยกับAI</Link>, '7', <UserOutlined />)
 ];
 
 const rolePermissions = {
-  admin: ['1', '2', '3', '4', '5', '6'],
+  admin: ['1', '2', '3', '4', '5', '6', '7'],
   manager: ['1', '2', '3', '4', '5', '6'],
   staff: ['1', '2', '3', '6'],
 };

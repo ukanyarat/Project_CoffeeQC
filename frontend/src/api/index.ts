@@ -101,7 +101,7 @@ export const createOrderList = (orderListData: any) => api.post('/orderList/crea
 export const createCustomer = (customerData: any) => api.post('/customer/create', customerData);
 export const updateCustomer = (customerData: any) => api.patch('/customer/update', customerData);
 export const deleteCustomer = (id: string) => api.delete(`/customer/delete/${id}`);
-export const createMenu = (menuData: any) => api.post('/menu/create', menuData);
+export const createMenu = (menuData: any) => api.post('/menu/create', { ...menuData, status: menuData.status || 'available' });
 export const updateMenu = (menuData: any) => api.patch('/menu/update', menuData);
 export const deleteMenu = (id: string) => api.delete(`/menu/delete/${id}`);
 

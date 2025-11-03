@@ -55,6 +55,10 @@ model User {
   customers_created Customer[] @relation("CustomerCreatedBy")
   customers_updated Customer[] @relation("CustomerUpdatedBy")
 
+  // คสพ. QR Code
+  paymentQRs_created PaymentQR[] @relation("PaymentQRCreatedBy")
+  paymentQRs_updated PaymentQR[] @relation("PaymentQRUpdatedBy")
+
   @@unique([emp_fname, emp_phone, username, emp_status])
   @@index([company_id])
   @@index([role_id])
@@ -95,6 +99,7 @@ model Company {
   orders      Order[]
   orderLists  OrderList[]
   customers   Customer[]
+  paymentQRs  PaymentQR[]
 
   @@unique([company_code, company_name])
 }
@@ -192,6 +197,7 @@ model Order {
   company          Company  @relation(fields: [company_id], references: [id])
 
   orderLists       OrderList[]
+  paymentQR        PaymentQR?
 
   @@index([order_number])
   @@index([customer_id])
@@ -243,4 +249,25 @@ model Customer {
   @@unique([customer_name, customer_phone])
   @@index([company_id])
   @@index([customer_phone])
+}
+
+model PaymentQR {
+  id          String   @id @default(uuid()) @db.Uuid
+  company_id  String   @db.Uuid
+  qr_code     String   @unique
+  amount      Decimal  @db.Decimal(10, 2)
+  order_id    String   @db.Uuid @unique
+  is_paid     Boolean  @default(false)
+  created_by  String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_by  String?  @db.Uuid
+  updated_at  DateTime @updatedAt
+
+  company          Company @relation(fields: [company_id], references: [id])
+  order            Order   @relation(fields: [order_id], references: [id])
+  created_by_user  User?    @relation("PaymentQRCreatedBy", fields: [created_by], references: [id])
+  updated_by_user  User?   @relation("PaymentQRUpdatedBy", fields: [updated_by], references: [id])
+
+  @@index([company_id])
+  @@index([order_id])
 }

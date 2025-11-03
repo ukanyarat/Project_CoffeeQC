@@ -14,6 +14,7 @@ export const menuRepository = {
         return await prisma.menu.findMany({
             where: {
                 company_id: companyId,
+                status: { not: 'deleted' }, // Filter out soft-deleted menus
                 ...(searchText
                     ? {
                         OR: [
@@ -157,10 +158,13 @@ export const menuRepository = {
     },
 
     delete: async (id: string) => {
-        return await prisma.menu.delete({
+        return await prisma.menu.update({
             where: {
                 id: id
             },
+            data: {
+                status: 'deleted'
+            }
         })
     },
 
@@ -190,6 +194,7 @@ export const menuRepository = {
         return await prisma.menu.findMany({
             where: {
                 company_id: companyId,
+                status: { not: 'deleted' }, // Filter out soft-deleted menus
             },
             select: {
                 id: true,

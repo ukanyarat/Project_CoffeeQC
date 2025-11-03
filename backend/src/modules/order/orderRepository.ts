@@ -63,10 +63,9 @@ export const orderRepository = {
                     }
                     : {}),
             },
-            // select: {
-            //     id: true,
-            //     category_name: true,
-            // },
+            include: {
+                customer: true,
+            },
             skip,
             take,
             orderBy: [
@@ -202,9 +201,8 @@ export const orderRepository = {
             where: {
                 company_id: companyId,
             },
-            select: {
-                id: true,
-                order_number: true,
+            include: {
+                customer: true,
             }
         })
     }

@@ -1,41 +1,68 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3002;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+    console.error("❌ FATAL: GEMINI_API_KEY is not set in environment variables.");
+    process.exit(1);
+}
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY }); // สร้าง instance 'ai'
 
 app.use(bodyParser.json());
 
 app.get('/', (req: Request, res: Response) => {
-    res.status(200).send('Welcome to MCP Bro!');
+    res.status(200).send('Welcome to MCP Bro! (AI Ready)');
 });
 
-app.post('/api/ask', (req: Request, res: Response) => {
-    console.log('Received request from Service: \n', req.body);
-    res.status(200).send('Welcome to MCP >> /api/ask!');
-    // const requestData = req.body;
+app.post('/api/ask', async (req: Request, res: Response) => {
+    const requestData = req.body;
+    const { question, companyId } = requestData;
 
-    // // ตรวจสอบข้อมูลที่ได้รับ
-    // console.log('Received request from Service:', requestData);
+    if (!question || typeof question !== 'string') {
+        return res.status(400).json({
+            status: 'failed',
+            message: 'Question field is required in the request body.'
+        });
+    }
 
-    // // *** ส่วนนี้คือ Logic การประมวลผลของ MCP ***
-    // // เช่น การเรียกใช้ AI Model, การคำนวณ, หรือการดึงข้อมูล
+    try {
+        // 1.  กำหนด System Instruction เพื่อให้ Gemini ทำหน้าที่เฉพาะทาง
+        // const systemInstruction = `You are an AI assistant specialized in analyzing coffee quality control data for Company ID ${companyId}. Based on the user's question, provide concise, technical, and accurate analysis.`;
+        const systemInstruction = `
+You are an AI assistant for Company ID ${companyId}. 
+You can answer general questions normally, 
+but when the user asks about coffee quality control, 
+provide technical and accurate analysis.
+`;
 
-    // // สร้างคำตอบจำลองกลับไป
-    // const mcpResult = {
-    //     status: 'processed',
-    //     message: 'Payload received and processed successfully by MCP.',
-    //     inputData: requestData,
-    //     result: 'The calculated answer is 42.' // คำตอบจากการคิด
-    // };
+        // 2. เรียกใช้ Gemini API
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: question,
+            config: {
+                systemInstruction: systemInstruction,
+                // สามารถเพิ่มการตั้งค่าอื่นๆ เช่น temperature หรือ maxOutputTokens ได้ที่นี่
+            }
+        });
 
-    // // ส่งคำตอบกลับไปยัง Service ต้นทาง (Port 8080/อื่นๆ)
-    // res.status(200).json(mcpResult);
+        const geminiAnswer = response.text;
+        const mcpResult = {
+            inputData: requestData.question,
+            result: geminiAnswer,
+        };
+        res.status(200).json(mcpResult);
+    } catch (error) {
+        console.error('Error during Gemini API call:', error);
+    }
 });
 
-
-// 🚀 เริ่มต้น Server
 app.listen(PORT, () => {
     console.log(`🚀 MCP Service is running on port ${PORT}`);
+    console.log(`API Endpoint: http://localhost:${PORT}/api/ask`);
 });

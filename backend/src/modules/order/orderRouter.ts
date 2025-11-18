@@ -21,8 +21,9 @@ export const orderRouter = (() => {
                 const page = parseInt(req.query.page as string) || 1;
                 const pageSize = parseInt(req.query.pageSize as string) || 12;
                 const searchText = (req.query.searchText as string) || ""
+                const date = req.query.date ? new Date(req.query.date as string) : undefined;
                 const { companyId, uuid } = req.token.payload;
-                const ServiceResponse = await orderService.findAll(companyId, page, pageSize, searchText);
+                const ServiceResponse = await orderService.findAll(companyId, page, pageSize, searchText, date);
                 handleServiceResponse(ServiceResponse, res);
             } catch (error) {
                 console.error("Error in GET request:", error);

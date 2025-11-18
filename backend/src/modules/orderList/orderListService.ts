@@ -10,6 +10,7 @@ export const orderListService = {
         page: number = 1,
         pageSize: number = 12,
         searchText: string = "",
+        orderId?: string,
     ) => {
         try {
             const skip = (page - 1) * pageSize;
@@ -17,7 +18,8 @@ export const orderListService = {
                 companyId,
                 skip,
                 pageSize,
-                searchText
+                searchText,
+                orderId
             );
             const totalCount = await orderListRepository.count(companyId, searchText);
             return new ServiceResponse(

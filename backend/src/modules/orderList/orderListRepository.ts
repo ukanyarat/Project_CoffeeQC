@@ -9,11 +9,13 @@ export const orderListRepository = {
         companyId: string,
         skip: number,
         take: number,
-        searchText: string
+        searchText: string,
+        orderId?: string // Add orderId parameter
     ) => {
         return await prisma.orderList.findMany({
             where: {
                 company_id: companyId,
+                ...(orderId ? { order_id: orderId } : {}),
                 ...(searchText
                     ? {
                         OR: [

@@ -20,7 +20,12 @@ export const validateRequest =
             schema.parse({ body: req.body, query: req.query, params: req.params });
             next();
         } catch (err) {
-            const errorMessage = `Invalid input: ${(err as ZodError).errors.map((e) => e.message).join(", ")}`;
+            let errorMessage = "Invalid input";
+            if (err instanceof ZodError && err.errors) {
+                errorMessage = `Invalid input: ${err.errors.map((e) => e.message).join(", ")}`;
+            } else if (err instanceof Error) {
+                errorMessage = `Invalid input: ${err.message}`;
+            }
             const statusCode = StatusCodes.BAD_REQUEST;
             res
                 .status(statusCode)

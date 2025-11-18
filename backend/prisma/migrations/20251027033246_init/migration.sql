@@ -74,12 +74,16 @@ CREATE TABLE "Category" (
 -- CreateTable
 CREATE TABLE "Menu" (
     "id" UUID NOT NULL,
-    "company_id" UUID NOT NULL,
-    "category_id" UUID NOT NULL,
     "name" TEXT NOT NULL,
-    "type" TEXT,
+    "description" TEXT,
+    "image_url" TEXT,
     "price" DECIMAL(10,2) NOT NULL,
+    "sku" TEXT,
+    "category_id" UUID NOT NULL,
+    "type" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'available',
     "stock" INTEGER,
+    "company_id" UUID NOT NULL,
     "created_by" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_by" UUID,
@@ -179,6 +183,9 @@ CREATE INDEX "Category_category_name_idx" ON "Category"("category_name");
 
 -- CreateIndex
 CREATE INDEX "Category_company_id_idx" ON "Category"("company_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Menu_sku_key" ON "Menu"("sku");
 
 -- CreateIndex
 CREATE INDEX "Menu_category_id_idx" ON "Menu"("category_id");

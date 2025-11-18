@@ -14,4 +14,5 @@ export const env = cleanEnv(process.env, {
     // ACCESS_EXPIRATION_MINUTES: num(),
     // REFRESH_EXPIRATION_DAYS: num(),
     // REDIS_URI: str(),
+    MCP_SERVER_PORT: str(),
 });

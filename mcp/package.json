@@ -2,12 +2,12 @@
   "name": "mcp",
   "type": "module",
   "bin": {
-    "weather": "./build/index.js"
+    "weather": "./build/index.ts"
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsx --watch src/index.ts",
-    "start": "node build/index.js",
+    "dev": "tsx --watch index.ts",
+    "start": "node build/index.ts",
     "db:generate": "tsx generate.ts"
   },
   "files": [
@@ -24,12 +24,13 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.6.13",
-    "prisma": "^6.18.0"
+    "prisma": "^6.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

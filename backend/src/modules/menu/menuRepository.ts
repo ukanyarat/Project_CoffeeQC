@@ -14,7 +14,7 @@ export const menuRepository = {
         return await prisma.menu.findMany({
             where: {
                 company_id: companyId,
-                status: { not: 'deleted' }, // Filter out soft-deleted menus
+                status: { not: 'deleted' },
                 ...(searchText
                     ? {
                         OR: [
@@ -123,6 +123,7 @@ export const menuRepository = {
                 type: payload.type,
                 price: payload.price,
                 stock: payload.stock ?? 0,
+                status: payload.status,
                 created_at: new Date(),
                 updated_at: new Date(),
                 created_by: userId,

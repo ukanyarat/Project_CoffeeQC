@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "User" (
     "id" UUID NOT NULL,
-    "company_id" UUID,
+    "company_id" UUID NOT NULL,
     "emp_fname" TEXT NOT NULL,
     "emp_lname" TEXT NOT NULL,
     "emp_phone" TEXT NOT NULL,
@@ -74,15 +74,12 @@ CREATE TABLE "Category" (
 -- CreateTable
 CREATE TABLE "Menu" (
     "id" UUID NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "image_url" TEXT,
-    "price" DECIMAL(10,2) NOT NULL,
-    "sku" TEXT,
     "category_id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
     "type" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'available',
+    "price" DECIMAL(10,2) NOT NULL,
     "stock" INTEGER,
+    "status" TEXT NOT NULL DEFAULT 'available',
     "company_id" UUID NOT NULL,
     "created_by" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -185,9 +182,6 @@ CREATE INDEX "Category_category_name_idx" ON "Category"("category_name");
 CREATE INDEX "Category_company_id_idx" ON "Category"("company_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Menu_sku_key" ON "Menu"("sku");
-
--- CreateIndex
 CREATE INDEX "Menu_category_id_idx" ON "Menu"("category_id");
 
 -- CreateIndex
@@ -233,7 +227,7 @@ CREATE UNIQUE INDEX "Customer_customer_name_customer_phone_key" ON "Customer"("c
 ALTER TABLE "User" ADD CONSTRAINT "User_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Company" ADD CONSTRAINT "Company_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -17,7 +17,7 @@ export const CreateCustomerSchema = z.object({
     body: z.object({
         customer_name: z.string().min(1, "customer_name is required").max(50),
         customer_phone: z.string().min(10, "customer_phone is required").max(15),
-        customer_status: z.string().nullable().optional(),
+        customer_status: z.string().max(20).nullable().optional(),
     })
 })
 

@@ -20,9 +20,9 @@ export const CreateOrderListSchema = z.object({
     body: z.object({
         order_id: z.string().uuid(),
         menu_id: z.string().uuid(),
-        price: z.number(),
-        quantity: z.number().min(0),
-        remark: z.string().max(50).nullable().optional(),
+        price: z.number().max(99999.99),
+        quantity: z.number().min(0).max(99),
+        remark: z.string().max(255).nullable().optional(),
         status: z.string().max(50)
     })
 })

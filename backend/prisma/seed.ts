@@ -127,7 +127,6 @@ async function main() {
                     company_id: companyId,
                     created_by: adminUserId,
                     status: 'available',
-                    description: `Description for ${category.category_name} Menu ${i}`,
                     type: menuType,
                 },
             });

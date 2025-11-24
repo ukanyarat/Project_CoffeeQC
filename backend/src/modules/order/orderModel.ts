@@ -18,9 +18,9 @@ export type TypePayloadOrder = {
 export const CreateOrderSchema = z.object({
     body: z.object({
         // order_number is auto generated automatically
-        order_status: z.string().min(1, "order_status is required"),
-        service: z.string().min(1, "service is required"),
-        payment_channel: z.string().min(1, "payment_channel is required"),
+        order_status: z.string().min(1, "order_status is required").max(50),
+        service: z.string().min(1, "service is required").max(50),
+        payment_channel: z.string().min(1, "payment_channel is required").max(50),
         customer_id: z.string().uuid(),
     })
 })

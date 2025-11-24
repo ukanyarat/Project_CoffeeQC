@@ -97,7 +97,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ user }) => {
         style={{ background: '#FFFBF5', borderRight: '1px solid #FBE9E7', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <img src="/images/logoicon.png" alt="Logo" style={{ height: '100%', maxWidth: '100%' }} />
+          <img src="/images/logoicon.png" alt="Logo" style={{ height: '100%', maxWidth: '100%' }} onClick={() => navigate('/')} />
         </div>
         <Menu
           theme="light"

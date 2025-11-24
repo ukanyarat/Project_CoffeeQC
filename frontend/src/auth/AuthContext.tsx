@@ -1,18 +1,7 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect } from 'react';
 import { logout as apiLogout } from '../api';
-
-interface User {
-  name: string;
-  role: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (user: User) => void;
-  logout: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from './auth';
+import type { User } from './auth';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -23,7 +12,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (parsedUser && parsedUser.name && parsedUser.role) {
           return parsedUser;
         }
-      } catch (e) {
+      } catch {
+        // This is expected if the stored user is not valid JSON.
         return null;
       }
     }
@@ -42,6 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error("Logout failed", error);
     }
     localStorage.removeItem('user');
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     setUser(null);
   };
 

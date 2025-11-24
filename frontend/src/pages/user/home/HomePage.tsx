@@ -1,38 +1,70 @@
-import React from 'react';
-import { Typography, Row, Col } from 'antd';
+import React, { useContext } from 'react';
+import { Typography, Row, Col, Card, Statistic } from 'antd';
+import { ArrowUpOutlined, CoffeeOutlined, TeamOutlined, DollarCircleOutlined } from '@ant-design/icons';
+import { AuthContext } from '../../../auth/auth';
 
-const { Title, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const HomePage: React.FC = () => {
+  const { user } = useContext(AuthContext)!;
+
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: 'calc(100vh - 64px)', 
-      background: '#FFFBF5' 
-    }}>
-      <Row justify="center" align="middle" style={{ textAlign: 'center' }}>
-        <Col span={24}>
-          <img 
-            src="/images/logofront.jpg" 
-            alt="Coffee QC Logo" 
-            style={{ 
-              width: '200px', 
-              height: '200px',
-              borderRadius: '50%',
-              marginBottom: '24px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-            }} 
-          />
+    <div>
+      <Title level={2} style={{ marginBottom: '24px' }}>
+        Welcome back, {user?.name || 'User'}!
+      </Title>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Today's Revenue"
+              value={11289.45}
+              precision={2}
+              valueStyle={{ color: '#66BB6A' }}
+              prefix={<DollarCircleOutlined />}
+              suffix="THB"
+            />
+          </Card>
         </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Today's Orders"
+              value={93}
+              valueStyle={{ color: '#8D6E63' }}
+              prefix={<CoffeeOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="New Customers"
+              value={12}
+              valueStyle={{ color: '#29B6F6' }}
+              prefix={<TeamOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Growth"
+              value={9.3}
+              precision={1}
+              valueStyle={{ color: '#66BB6A' }}
+              prefix={<ArrowUpOutlined />}
+              suffix="%"
+            />
+          </Card>
+        </Col>
+      </Row>
+      {/* Can add more components like recent orders or charts here in the future */}
+      <Row style={{marginTop: 24}}>
         <Col span={24}>
-          <Title style={{ color: '#6D4C41' }}>
-            Welcome to CoffeeQC
-          </Title>
-          <Paragraph style={{ color: '#A1887F', fontSize: '18px' }}>
-            Your daily dose of quality coffee, managed with ease.
-          </Paragraph>
+          <Card title="Quick Actions">
+             <Text>Quick actions can be added here.</Text>
+          </Card>
         </Col>
       </Row>
     </div>

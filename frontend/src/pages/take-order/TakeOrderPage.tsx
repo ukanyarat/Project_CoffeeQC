@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Row, Col, Tabs, Card, Button, List, Avatar, Statistic, message, Popconfirm, Select, Input, Divider, Space } from 'antd';
 import { PlusOutlined, MinusOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons';
 import { getCategories, getMenus, getCustomers, createOrder, createOrderList, createCustomer } from '../../api';
+import QRCodePopup from '../../components/common/QRCodePopup';
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -41,6 +42,7 @@ const TakeOrderPage: React.FC = () => {
   const [newCustomerPhone, setNewCustomerPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isQrPopupVisible, setIsQrPopupVisible] = useState(false);
 
   const fetchAllData = async () => {
     try {
@@ -91,25 +93,25 @@ const TakeOrderPage: React.FC = () => {
 
   const handleAddCustomer = async () => {
     if (!newCustomerName) {
-        message.error('Customer name cannot be empty.');
-        return;
+      message.error('Customer name cannot be empty.');
+      return;
     }
     if (!newCustomerPhone) {
-        message.error('Customer phone cannot be empty.');
-        return;
+      message.error('Customer phone cannot be empty.');
+      return;
     }
     try {
-        const response = await createCustomer({ customer_name: newCustomerName, customer_phone: newCustomerPhone });
-        message.success(`Customer '${newCustomerName}' created`);
-        setNewCustomerName('');
-        setNewCustomerPhone('');
-        // Refetch customers to get the new list with the new ID
-        const custRes = await getCustomers();
-        setCustomers(custRes.responseObject || []);
-        // Select the newly created customer
-        setSelectedCustomer(response.responseObject.id);
+      const response = await createCustomer({ customer_name: newCustomerName, customer_phone: newCustomerPhone });
+      message.success(`Customer '${newCustomerName}' created`);
+      setNewCustomerName('');
+      setNewCustomerPhone('');
+      // Refetch customers to get the new list with the new ID
+      const custRes = await getCustomers();
+      setCustomers(custRes.responseObject || []);
+      // Select the newly created customer
+      setSelectedCustomer(response.responseObject.id);
     } catch (error: any) {
-        message.error('Failed to create customer: ' + error.message);
+      message.error('Failed to create customer: ' + error.message);
     }
   };
 
@@ -129,7 +131,7 @@ const TakeOrderPage: React.FC = () => {
     message.info('Order cleared');
   };
 
-  const placeOrder = async () => {
+  const handlePlaceOrderClick = () => {
     if (cart.length === 0) {
       message.error('Cannot place an empty order');
       return;
@@ -138,13 +140,18 @@ const TakeOrderPage: React.FC = () => {
       message.error('Please select a customer');
       return;
     }
+    setIsQrPopupVisible(true);
+  };
+
+  const finalizeOrder = async () => {
+    if (cart.length === 0 || !selectedCustomer) return;
 
     setIsSubmitting(true);
     try {
       const orderPayload = {
         order_status: 'pending',
         service: 'take-away',
-        payment_channel: 'cash',
+        payment_channel: 'qr_promptpay',
         customer_id: selectedCustomer,
       };
       const orderResponse = await createOrder(orderPayload);
@@ -175,6 +182,7 @@ const TakeOrderPage: React.FC = () => {
       message.error('Failed to place order: ' + error.message);
     } finally {
       setIsSubmitting(false);
+      setIsQrPopupVisible(false);
     }
   };
 
@@ -289,7 +297,7 @@ const TakeOrderPage: React.FC = () => {
                   </Popconfirm>
                 </Col>
                 <Col span={12}>
-                  <Button type="primary" block size="large" onClick={placeOrder} loading={isSubmitting} disabled={cart.length === 0}>
+                  <Button type="primary" block size="large" onClick={handlePlaceOrderClick} loading={isSubmitting} disabled={cart.length === 0}>
                     Place Order
                   </Button>
                 </Col>
@@ -298,6 +306,13 @@ const TakeOrderPage: React.FC = () => {
           </Col>
         </Row>
       </Content>
+      {isQrPopupVisible && (
+        <QRCodePopup
+          amount={total}
+          onClose={() => setIsQrPopupVisible(false)}
+          onPaymentSuccess={finalizeOrder}
+        />
+      )}
     </Layout>
   );
 };

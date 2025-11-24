@@ -55,7 +55,6 @@ export const userService = {
                 ResponseStatus.Success,
                 "User successfully authenticated and logged in",
                 {
-                    token: token,
                     user: {
                         name: checkUser.emp_fname,
                         role: checkUser.role.role_name

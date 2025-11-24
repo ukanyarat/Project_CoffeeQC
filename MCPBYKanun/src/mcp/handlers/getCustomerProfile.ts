@@ -1,0 +1,53 @@
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
+type Input = { customer_id: string };
+
+export async function getCustomerProfile({ customer_id }: Input) {
+  const customer = await prisma.customer.findUnique({
+    where: { id: customer_id },
+    select: {
+      id: true, company_id: true, customer_name: true, customer_phone: true,
+      customer_status: true, created_at: true
+    }
+  });
+  if (!customer) return { not_found: true };
+
+  // หา order ของลูกค้าคนนี้
+  const orders = await prisma.order.findMany({
+    where: { customer_id },
+    select: { id: true }
+  });
+  const orderIds = orders.map(o => o.id);
+
+  // คำนวณยอดรวมจาก OrderList
+  let totalAmount = 0;
+  let itemsCount = 0;
+  if (orderIds.length) {
+    const lists = await prisma.orderList.findMany({
+      where: { order_id: { in: orderIds } },
+      select: { price: true, quantity: true }
+    });
+    for (const l of lists) {
+      totalAmount += Number(l.price) * l.quantity;
+      itemsCount += l.quantity;
+    }
+  }
+
+  return {
+    profile: {
+      customer_id: customer.id,
+      company_id: customer.company_id,
+      name: customer.customer_name,
+      phone: customer.customer_phone,
+      status: customer.customer_status,
+      created_at: customer.created_at
+    },
+    metrics: {
+      orders_count: orders.length,
+      items_count: itemsCount,
+      total_amount: Number(totalAmount.toFixed(2))
+    }
+  };
+}
+

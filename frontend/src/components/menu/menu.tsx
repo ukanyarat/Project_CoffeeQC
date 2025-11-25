@@ -10,6 +10,7 @@ import {
   CoffeeOutlined,
   LogoutOutlined,
   MessageOutlined,
+  PieChartOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Avatar, Typography, Tooltip, Badge } from 'antd';
@@ -69,6 +70,10 @@ const allMenuItems: (MenuItem & { path: string })[] = [
     path: '/employees'
   },
   {
+    ...getItem(<Link to="/dashboard">แดชบอร์ด</Link>, 'dashboard', <PieChartOutlined />),
+    path: '/dashboard'
+  },
+  {
     ...getItem(<Link to="/">คุยกับ AI</Link>, 'home', <MessageOutlined />),
     path: '/'
   },
@@ -81,8 +86,8 @@ const allMenuItems: (MenuItem & { path: string })[] = [
  * - staff: เข้าถึงได้เฉพาะเมนูพื้นฐาน (รับออเดอร์, ดูออเดอร์วันนี้, สินค้า)
  */
 const rolePermissions: Record<string, string[]> = {
-  admin: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees'],
-  manager: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees'],
+  admin: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
+  manager: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
   staff: ['home', 'take-order', 'todays-orders', 'products'],
 };
 

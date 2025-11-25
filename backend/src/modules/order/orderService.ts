@@ -153,4 +153,24 @@ export const orderService = {
         }
     },
 
+    getSalesAnalytics: async (companyId: string, period: string) => {
+        try {
+            const salesData = await orderRepository.getSalesAnalyticsByCompany(companyId, period);
+            return new ServiceResponse(
+                ResponseStatus.Success,
+                "Sales analytics retrieved successfully",
+                salesData,
+                StatusCodes.OK
+            );
+        } catch (ex) {
+            const errorMessage = `Error retrieving sales analytics: ${(ex as Error).message}`;
+            return new ServiceResponse(
+                ResponseStatus.Failed,
+                errorMessage,
+                null,
+                StatusCodes.INTERNAL_SERVER_ERROR
+            );
+        }
+    },
+
 }

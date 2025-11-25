@@ -113,3 +113,9 @@ export const deleteUser = (id: string) => api.delete(`/user/delete/${id}`);
 
 // Role APIs
 export const getRoles = () => api.get('/role/getNoPaginate');
+
+// Dashboard APIs
+export const getSalesAnalytics = (period?: string) => {
+  const query = period ? `?period=${period}` : '';
+  return api.get(`/order/sales-analytics${query}`);
+};

@@ -4,6 +4,8 @@ const prisma = new PrismaClient();
 type Input = { customer_id: string };
 
 export async function getCustomerProfile({ customer_id }: Input) {
+  console.error(`[getCustomerProfile] 👤 Getting profile for customer_id: ${customer_id}`);
+
   const customer = await prisma.customer.findUnique({
     where: { id: customer_id },
     select: {
@@ -11,7 +13,13 @@ export async function getCustomerProfile({ customer_id }: Input) {
       customer_status: true, created_at: true
     }
   });
-  if (!customer) return { not_found: true };
+
+  if (!customer) {
+    console.error(`[getCustomerProfile] ❌ Customer not found: ${customer_id}`);
+    return { not_found: true };
+  }
+
+  console.error(`[getCustomerProfile] ✅ Customer found: ${customer.customer_name}`);
 
   // หา order ของลูกค้าคนนี้
   const orders = await prisma.order.findMany({
@@ -19,6 +27,8 @@ export async function getCustomerProfile({ customer_id }: Input) {
     select: { id: true }
   });
   const orderIds = orders.map(o => o.id);
+
+  console.error(`[getCustomerProfile] 📦 Found ${orders.length} orders`);
 
   // คำนวณยอดรวมจาก OrderList
   let totalAmount = 0;
@@ -32,6 +42,7 @@ export async function getCustomerProfile({ customer_id }: Input) {
       totalAmount += Number(l.price) * l.quantity;
       itemsCount += l.quantity;
     }
+    console.error(`[getCustomerProfile] 💰 Total: ${totalAmount.toFixed(2)} THB, Items: ${itemsCount}`);
   }
 
   return {

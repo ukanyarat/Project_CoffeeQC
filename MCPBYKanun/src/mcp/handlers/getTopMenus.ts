@@ -7,13 +7,22 @@ export async function getTopMenus({ company_id, start_date, end_date, limit = 5 
   const start = start_date ? new Date(start_date) : new Date("1970-01-01");
   const end = end_date ? new Date(end_date) : new Date();
 
+  console.error(`[getTopMenus] 🏆 Getting top menus for company: ${company_id}, limit: ${limit}`);
+  console.error(`[getTopMenus] 📅 Period: ${start.toISOString()} to ${end.toISOString()}`);
+
   // หาทุก order ของ company ในช่วงเวลา
   const orders = await prisma.order.findMany({
     where: { company_id, created_at: { gte: start, lte: end } },
     select: { id: true }
   });
   const orderIds = orders.map(o => o.id);
-  if (!orderIds.length) return [];
+
+  if (!orderIds.length) {
+    console.error(`[getTopMenus] ⚠️ No orders found for this period`);
+    return [];
+  }
+
+  console.error(`[getTopMenus] 📦 Found ${orders.length} orders`);
 
   // ดึง order list แล้วสรุปยอดตามเมนู
   const lists = await prisma.orderList.findMany({
@@ -30,9 +39,12 @@ export async function getTopMenus({ company_id, start_date, end_date, limit = 5 
     agg.set(key, prev);
   }
 
-  return Array.from(agg.entries())
+  const result = Array.from(agg.entries())
     .map(([menu_id, v]) => ({ menu_id, name: v.name, qty: v.qty, amount: Number(v.amount.toFixed(2)) }))
     .sort((a, b) => b.qty - a.qty)
     .slice(0, Math.min(20, Math.max(1, limit)));
+
+  console.error(`[getTopMenus] ✅ Returning top ${result.length} menus`);
+  return result;
 }
 

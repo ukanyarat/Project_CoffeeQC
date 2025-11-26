@@ -18,6 +18,7 @@ const ProductsPage = lazy(() => import("../pages/products/ProductsPage"));
 const CustomersPage = lazy(() => import("../pages/customers/CustomersPage"));
 const EmployeesPage = lazy(() => import("../pages/employees/EmployeesPage"));
 const DashboardPage = lazy(() => import("../pages/dashboard/DashboardPage"));
+const AiChatPage = lazy(() => import("../pages/ai-chat/AiChatPage"));
 
 const router = createBrowserRouter([
   {
@@ -96,6 +97,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<Spin size="large" />}>
                 <DashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/ai-chat",
+            element: (
+              <Suspense fallback={<Spin size="large" />}>
+                <AiChatPage />
               </Suspense>
             ),
           },

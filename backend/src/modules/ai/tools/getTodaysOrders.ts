@@ -1,18 +1,16 @@
-
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export async function getTodaysOrders() {
+export async function getTodaysOrders(companyId: string) {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
 
-  console.error(`[getTodaysOrders] 📅 Getting orders for today: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
-
   const orders = await prisma.order.findMany({
     where: {
+      company_id: companyId,
       created_at: {
         gte: startOfDay,
         lt: endOfDay,
@@ -34,8 +32,6 @@ export async function getTodaysOrders() {
     },
   });
 
-  console.error(`[getTodaysOrders] 📦 Found ${orders.length} orders for today`);
-
   // ดึงรายการ OrderList + Menu ต่อออเดอร์
   const result = [];
   for (const o of orders) {
@@ -54,7 +50,5 @@ export async function getTodaysOrders() {
     );
     result.push({ ...o, items, subtotal: Number(subtotal.toFixed(2)) });
   }
-
-  console.error(`[getTodaysOrders] ✅ Returning ${result.length} orders with items`);
   return result;
 }

@@ -98,6 +98,7 @@ export const getOrderLists = (params?: { orderId?: string }) => {
 // Data Creation
 export const createOrder = (orderData: any) => api.post('/order/create', orderData);
 export const createOrderList = (orderListData: any) => api.post('/orderList/create', orderListData);
+export const updateOrder = (orderId: string, orderData: any) => api.patch(`/order/update/${orderId}`, orderData);
 export const createCustomer = (customerData: any) => api.post('/customer/create', customerData);
 export const updateCustomer = (customerData: any) => api.patch('/customer/update', customerData);
 export const deleteCustomer = (id: string) => api.delete(`/customer/delete/${id}`);

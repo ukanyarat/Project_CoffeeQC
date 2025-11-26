@@ -48,7 +48,30 @@ export const orderRouter = (() => {
             }
         });
 
-    //update
+    //update with id in URL
+    router.patch("/update/:id",
+        authenticationToken,
+        (req: Request, res: Response, next: any) => {
+            // Insert id from URL into body before validation
+            req.body.id = req.params.id;
+            next();
+        },
+        validateRequest(UpdateOrderSchema),
+        async (req: Request, res: Response) => {
+            try {
+                const payload = req.body;
+                const { companyId, uuid } = req.token.payload;
+                const userId = uuid;
+
+                const ServiceResponse = await orderService.update(companyId, userId, payload);
+                handleServiceResponse(ServiceResponse, res);
+            } catch (error) {
+                console.error("Error in POST request:", error);
+                res.status(500).json({ status: "error", message: "Internal Server Error" });
+            }
+        });
+
+    //update with id in body
     router.patch("/update",
         authenticationToken,
         validateRequest(UpdateOrderSchema),
@@ -57,6 +80,7 @@ export const orderRouter = (() => {
                 const payload = req.body;
                 const { companyId, uuid } = req.token.payload;
                 const userId = uuid;
+
                 const ServiceResponse = await orderService.update(companyId, userId, payload);
                 handleServiceResponse(ServiceResponse, res);
             } catch (error) {

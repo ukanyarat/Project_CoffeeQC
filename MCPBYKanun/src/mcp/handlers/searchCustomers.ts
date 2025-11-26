@@ -4,8 +4,13 @@ const prisma = new PrismaClient();
 type Input = { query: string; company_id?: string; limit?: number };
 
 export async function searchCustomers({ query, company_id, limit = 10 }: Input) {
+  console.error(`[searchCustomers] 🔍 Searching customers with query: "${query}", company_id: ${company_id || 'all'}, limit: ${limit}`);
+
   const q = (query || "").trim();
-  if (!q) return [];
+  if (!q) {
+    console.error(`[searchCustomers] ⚠️ Empty query, returning empty array`);
+    return [];
+  }
 
   const rows = await prisma.customer.findMany({
     where: {
@@ -29,6 +34,8 @@ export async function searchCustomers({ query, company_id, limit = 10 }: Input) 
     },
     take: Math.min(50, Math.max(1, limit))
   });
+
+  console.error(`[searchCustomers] ✅ Found ${rows.length} customers`);
 
   return rows.map(r => ({
     customer_id: r.id,

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "coffeeqc": {
+      "command": "node",
+      "args": [
+        "/Users/markeihooooo/Documents/GitHub/Project_CoffeeQC/MCPBYKanun/node_modules/tsx/dist/cli.mjs",
+        "/Users/markeihooooo/Documents/GitHub/Project_CoffeeQC/MCPBYKanun/src/mcp-server.ts"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://user:password@localhost:5435/mydatabase"
+      }
+    }
+  }
+}

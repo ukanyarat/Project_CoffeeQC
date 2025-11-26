@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm, Tabs } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm, Tabs, Badge, Tag, Space, Empty } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CoffeeOutlined } from '@ant-design/icons';
 import { getMenus, getCategories, createMenu, updateMenu, deleteMenu } from '../../api';
 
 const { Title, Text } = Typography;
-const { Option, TabPane } = Select;
+const { Option } = Select;
+const { TextArea } = Input;
 
 interface Category {
   id: string;
@@ -128,112 +129,299 @@ const ProductsPage: React.FC = () => {
     setIsModalVisible(false);
   };
 
+  const getTypeColor = (type: string) => {
+    const colors: { [key: string]: string } = {
+      'HOT': '#ff4d4f',
+      'COLD': '#1890ff',
+      'FRAPPE': '#52c41a',
+      'default': '#8c8c8c'
+    };
+    return colors[type.toUpperCase()] || colors['default'];
+  };
+
   return (
-    <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
       {contextHolder}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={3}>Products Management</Title>
-        </Col>
-        <Col>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add New Product
-          </Button>
-        </Col>
-      </Row>
+      <Card
+        style={{
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          borderRadius: '12px',
+          marginBottom: '24px'
+        }}
+      >
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Space align="center">
+              <CoffeeOutlined style={{ fontSize: '32px', color: '#8B4513' }} />
+              <div>
+                <Title level={2} style={{ margin: 0, color: '#262626' }}>Products Management</Title>
+                <Text type="secondary">จัดการเมนูและสินค้าในร้าน</Text>
+              </div>
+            </Space>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+              style={{
+                borderRadius: '8px',
+                height: '48px',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                background: '#8B4513',
+                borderColor: '#8B4513'
+              }}
+            >
+              เพิ่มสินค้าใหม่
+            </Button>
+          </Col>
+        </Row>
+      </Card>
 
       <Spin spinning={loading}>
-        <Tabs defaultActiveKey={categories[0]?.id} onChange={key => console.log('Selected tab:', key)}>
-          {categories.map(category => (
-            <TabPane tab={category.category_name} key={category.id}>
-              <Row gutter={[16, 16]}>
-                {menus.filter(menu => menu.category_id === category.id).map(menu => (
-                  <Col key={menu.id} xs={24} sm={12} md={8} lg={6}>
-                    <Card
-                      hoverable
-                      actions={[
-                        <EditOutlined key="edit" onClick={() => handleEdit(menu)} />,
-                        <Popconfirm
-                          title="Are you sure to delete this menu item?"
-                          onConfirm={() => handleDelete(menu.id)}
-                          okText="Yes"
-                          cancelText="No"
+        <Tabs
+          defaultActiveKey={categories[0]?.id}
+          size="large"
+          style={{
+            background: 'white',
+            padding: '16px',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          {categories.map(category => {
+            const categoryMenus = menus.filter(menu => menu.category_id === category.id && menu.status !== 'deleted');
+            return (
+              <Tabs.TabPane
+                tab={
+                  <Badge count={categoryMenus.length} offset={[10, 0]} showZero>
+                    <span style={{ fontSize: '16px', padding: '0 8px' }}>
+                      {category.category_name}
+                    </span>
+                  </Badge>
+                }
+                key={category.id}
+              >
+                {categoryMenus.length === 0 ? (
+                  <Empty
+                    description="ยังไม่มีสินค้าในหมวดนี้"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    style={{ padding: '60px 0' }}
+                  >
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                      เพิ่มสินค้าแรก
+                    </Button>
+                  </Empty>
+                ) : (
+                  <Row gutter={[24, 24]} style={{ marginTop: '16px' }}>
+                    {categoryMenus.map(menu => (
+                      <Col key={menu.id} xs={24} sm={12} md={8} lg={6}>
+                        <Badge.Ribbon
+                          text={menu.type || 'สินค้า'}
+                          color={getTypeColor(menu.type || '')}
                         >
-                          <DeleteOutlined key="delete" />
-                        </Popconfirm>,
-                      ]}
-                    >
-                      <Card.Meta
-                        title={<Text strong>{menu.name}</Text>}
-                        description={
-                          <>
-                            <Text type="secondary">Category: {categories.find(cat => cat.id === menu.category_id)?.category_name}</Text><br />
-                            <Text type="secondary">Type: {menu.type}</Text><br />
-                            <Text type="secondary">Price: {Number(menu.price).toFixed(2)} THB</Text><br />
-                            {menu.stock !== undefined && <Text type="secondary">Stock: {menu.stock}</Text>}
-                          </>
-                        }
-                      />
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            </TabPane>
-          ))}
+                          <Card
+                            hoverable
+                            style={{
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                              transition: 'all 0.3s ease',
+                              minHeight: '200px'
+                            }}
+                            actions={[
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                onClick={() => handleEdit(menu)}
+                                style={{ color: '#1890ff' }}
+                              >
+                                แก้ไข
+                              </Button>,
+                              <Popconfirm
+                                title="ยืนยันการลบ?"
+                                description="คุณต้องการลบเมนูนี้หรือไม่?"
+                                onConfirm={() => handleDelete(menu.id)}
+                                okText="ใช่"
+                                cancelText="ไม่"
+                                okButtonProps={{ danger: true }}
+                              >
+                                <Button
+                                  type="text"
+                                  icon={<DeleteOutlined />}
+                                  danger
+                                >
+                                  ลบ
+                                </Button>
+                              </Popconfirm>,
+                            ]}
+                          >
+                            <Card.Meta
+                              title={
+                                <div style={{
+                                  fontSize: '18px',
+                                  fontWeight: 600,
+                                  marginBottom: '12px',
+                                  color: '#262626'
+                                }}>
+                                  {menu.name}
+                                </div>
+                              }
+                              description={
+                                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                  {menu.description && (
+                                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                                      {menu.description}
+                                    </Text>
+                                  )}
+                                  <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginTop: '8px',
+                                    paddingTop: '12px',
+                                    borderTop: '1px solid #f0f0f0'
+                                  }}>
+                                    <Text strong style={{ fontSize: '20px', color: '#8B4513' }}>
+                                      ฿{Number(menu.price).toFixed(2)}
+                                    </Text>
+                                    {menu.stock !== undefined && (
+                                      <Tag color={menu.stock > 10 ? 'success' : menu.stock > 0 ? 'warning' : 'error'}>
+                                        คงเหลือ: {menu.stock}
+                                      </Tag>
+                                    )}
+                                  </div>
+                                </Space>
+                              }
+                            />
+                          </Card>
+                        </Badge.Ribbon>
+                      </Col>
+                    ))}
+                  </Row>
+                )}
+              </Tabs.TabPane>
+            );
+          })}
         </Tabs>
       </Spin>
 
       <Modal
-        title={editingMenu ? 'Edit Product' : 'Add New Product'}
+        title={
+          <Space>
+            <span>{editingMenu ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</span>
+          </Space>
+        }
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={loading}
+        width={600}
+        okText={editingMenu ? 'บันทึก' : 'เพิ่มสินค้า'}
+        cancelText="ยกเลิก"
+        okButtonProps={{
+          style: { background: '#8B4513', borderColor: '#8B4513' }
+        }}
       >
         <Form form={form} layout="vertical" name="menu_form">
-          <Form.Item
-            name="name"
-            label="Product Name"
-            rules={[{ required: true, message: 'Please input the product name!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="category_id"
-            label="Category"
-            rules={[{ required: true, message: 'Please select a category!' }]}
-          >
-            <Select placeholder="Select a category">
-              {categories.map(cat => (
-                <Option key={cat.id} value={cat.id}>
-                  {cat.category_name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="type"
-            label="Type"
-          // rules={[{ required: true, message: 'Please input the product type!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="price"
-            label="Price"
-            rules={[{ required: true, message: 'Please input the price!' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item
-            name="stock"
-            label="Stock"
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="name"
+                label="ชื่อสินค้า"
+                rules={[{ required: true, message: 'กรุณากรอกชื่อสินค้า!' }]}
+              >
+                <Input
+                  placeholder="เช่น Espresso, Cappuccino"
+                  size="large"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={24}>
+              <Form.Item
+                name="description"
+                label="รายละเอียด"
+              >
+                <TextArea
+                  rows={3}
+                  placeholder="รายละเอียดสินค้า (ไม่บังคับ)"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="category_id"
+                label="หมวดหมู่"
+                rules={[{ required: true, message: 'กรุณาเลือกหมวดหมู่!' }]}
+              >
+                <Select
+                  placeholder="เลือกหมวดหมู่"
+                  size="large"
+                >
+                  {categories.map(cat => (
+                    <Option key={cat.id} value={cat.id}>
+                      {cat.category_name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="type"
+                label="ประเภท"
+              >
+                <Select
+                  placeholder="เลือกประเภท"
+                  size="large"
+                  allowClear
+                >
+                  <Option value="HOT">HOT (ร้อน)</Option>
+                  <Option value="COLD">COLD (เย็น)</Option>
+                  <Option value="FRAPPE">FRAPPE (ปั่น)</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="price"
+                label="ราคา (บาท)"
+                rules={[{ required: true, message: 'กรุณากรอกราคา!' }]}
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  size="large"
+                  placeholder="0.00"
+                  precision={2}
+                  prefix="฿"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="stock"
+                label="จำนวนคงเหลือ"
+              >
+                <InputNumber
+                  min={0}
+                  style={{ width: '100%' }}
+                  size="large"
+                  placeholder="ไม่ระบุ"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 };
 

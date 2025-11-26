@@ -74,8 +74,8 @@ const allMenuItems: (MenuItem & { path: string })[] = [
     path: '/dashboard'
   },
   {
-    ...getItem(<Link to="/">คุยกับ AI</Link>, 'home', <MessageOutlined />),
-    path: '/'
+    ...getItem(<Link to="/ai-chat">คุยกับ AI</Link>, 'ai-chat', <MessageOutlined />),
+    path: '/ai-chat'
   },
 ];
 
@@ -86,9 +86,9 @@ const allMenuItems: (MenuItem & { path: string })[] = [
  * - staff: เข้าถึงได้เฉพาะเมนูพื้นฐาน (รับออเดอร์, ดูออเดอร์วันนี้, สินค้า)
  */
 const rolePermissions: Record<string, string[]> = {
-  admin: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
-  manager: ['home', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
-  staff: ['home', 'take-order', 'todays-orders', 'products'],
+  admin: ['ai-chat', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
+  manager: ['ai-chat', 'take-order', 'todays-orders', 'products', 'sales-history', 'customers', 'employees', 'dashboard'],
+  staff: ['ai-chat', 'take-order', 'todays-orders', 'products'],
 };
 
 type UserRole = keyof typeof rolePermissions;

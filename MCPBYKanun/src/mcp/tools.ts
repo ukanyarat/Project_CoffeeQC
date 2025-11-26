@@ -1,9 +1,9 @@
-import { searchCustomers } from "./handlers/searchCustomers";
-import { getCustomerProfile } from "./handlers/getCustomerProfile";
-import { getCustomerRecentOrders } from "./handlers/getCustomerRecentOrders";
-import { getRevenueSummary } from "./handlers/getRevenueSummary";
-import { getTopMenus } from "./handlers/getTopMenus";
-import { getTodaysOrders } from "./handlers/getTodaysOrders";
+import { searchCustomers } from "./handlers/searchCustomers.js";
+import { getCustomerProfile } from "./handlers/getCustomerProfile.js";
+import { getCustomerRecentOrders } from "./handlers/getCustomerRecentOrders.js";
+import { getRevenueSummary } from "./handlers/getRevenueSummary.js";
+import { getTopMenus } from "./handlers/getTopMenus.js";
+import { getTodaysOrders } from "./handlers/getTodaysOrders.js";
 
 type ToolDef = {
   name: string;

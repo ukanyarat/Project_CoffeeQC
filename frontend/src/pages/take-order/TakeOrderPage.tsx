@@ -328,6 +328,7 @@ import {
   Popconfirm,
   message,
   Divider,
+  Statistic,
 } from "antd";
 import {
   PlusOutlined,
@@ -344,6 +345,7 @@ import {
   createOrderList,
   createCustomer,
 } from "../../api";
+import QRCodePopup from "../../components/common/QRCodePopup";
 
 const { Content } = Layout;
 const { Panel } = Collapse;
@@ -380,10 +382,16 @@ const TakeOrderPage: React.FC = () => {
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isQrPopupVisible, setIsQrPopupVisible] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr_promptpay">(
+    "cash"
+  );
 
   // Fetch data
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       const [cat, prod, cust] = await Promise.all([
         getCategories(),
         getMenus(),
@@ -424,18 +432,22 @@ const TakeOrderPage: React.FC = () => {
     if (!newCustomerName || !newCustomerPhone)
       return message.error("กรุณากรอกข้อมูลลูกค้า");
 
-    const res = await createCustomer({
-      customer_name: newCustomerName,
-      customer_phone: newCustomerPhone,
-    });
+    try {
+      const res = await createCustomer({
+        customer_name: newCustomerName,
+        customer_phone: newCustomerPhone,
+      });
 
-    message.success("เพิ่มลูกค้าเรียบร้อย");
-    const cust = await getCustomers();
-    setCustomers(cust.responseObject);
-    setSelectedCustomer(res.responseObject.id);
+      message.success("เพิ่มลูกค้าเรียบร้อย");
+      const cust = await getCustomers();
+      setCustomers(cust.responseObject || []);
+      setSelectedCustomer(res.responseObject.id);
 
-    setNewCustomerName("");
-    setNewCustomerPhone("");
+      setNewCustomerName("");
+      setNewCustomerPhone("");
+    } catch (error: any) {
+      message.error("Failed to create customer: " + error.message);
+    }
   };
 
   const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -443,6 +455,72 @@ const TakeOrderPage: React.FC = () => {
   const clearOrder = () => {
     setCart([]);
     setSelectedCustomer(undefined);
+    message.info("ล้างออเดอร์แล้ว");
+  };
+
+  const finalizeOrder = async (
+    paymentChannel: "cash" | "qr_promptpay"
+  ) => {
+    if (cart.length === 0 || !selectedCustomer) return;
+
+    setIsSubmitting(true);
+    try {
+      const orderPayload = {
+        order_status: "pending",
+        service: "take-away",
+        payment_channel: paymentChannel,
+        customer_id: selectedCustomer,
+      };
+      const orderResponse = await createOrder(orderPayload);
+      const orderId = orderResponse.responseObject.id;
+
+      if (!orderId) {
+        throw new Error("Failed to create order and get an order ID.");
+      }
+
+      const orderListPromises = cart.map((item) => {
+        const orderListPayload = {
+          order_id: orderId,
+          menu_id: item.id,
+          price: Number(item.price),
+          quantity: item.quantity,
+          status: "active",
+          remark: item.notes,
+        };
+        return createOrderList(orderListPayload);
+      });
+
+      await Promise.all(orderListPromises);
+
+      message.success(`บันทึกออเดอร์เรียบร้อยแล้ว!`);
+      clearOrder();
+    } catch (error: any) {
+      message.error("เกิดข้อผิดพลาดในการบันทึกออเดอร์: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+      setIsQrPopupVisible(false);
+    }
+  };
+
+  const handlePlaceOrder = () => {
+    if (cart.length === 0) {
+      message.error("ไม่สามารถสร้างออเดอร์ที่ว่างเปล่าได้");
+      return;
+    }
+    if (!selectedCustomer) {
+      message.error("กรุณาเลือกลูกค้า");
+      return;
+    }
+
+    if (paymentMethod === "qr_promptpay") {
+      setIsSubmitting(true); // Start loading
+      setTimeout(() => {
+        setIsSubmitting(false); // Stop loading after a delay
+        setIsQrPopupVisible(true); // Then show the popup
+      }, 500); // 0.5-second delay to simulate processing
+    } else {
+      finalizeOrder("cash");
+    }
   };
 
   return (
@@ -454,7 +532,7 @@ const TakeOrderPage: React.FC = () => {
             <div className="bg-white rounded-2xl shadow p-4">
               <h2 className="text-xl font-semibold mb-4">รายการสินค้า</h2>
 
-              <Collapse accordion className="bg-transparent">
+              <Collapse accordion className="bg-transparent" loading={loading}>
                 {categories.map((c) => (
                   <Panel
                     header={
@@ -472,6 +550,7 @@ const TakeOrderPage: React.FC = () => {
                           <div
                             key={p.id}
                             className="flex justify-between items-center bg-white shadow-sm p-3 rounded-xl hover:shadow-md transition cursor-pointer"
+                            onClick={() => addToCart(p)}
                           >
                             <div>
                               <div className="text-base font-medium">
@@ -485,7 +564,6 @@ const TakeOrderPage: React.FC = () => {
                             <Button
                               type="primary"
                               className="bg-blue-600 rounded-lg px-3"
-                              onClick={() => addToCart(p)}
                             >
                               เพิ่มรายการ
                             </Button>
@@ -598,8 +676,63 @@ const TakeOrderPage: React.FC = () => {
               </div>
 
               {/* Total */}
-              <div className="text-right mt-5 text-xl font-semibold text-[#2B3A55]">
-                รวมทั้งหมด: {total} THB
+              <div className="mt-5">
+                <Statistic
+                  title={<span className="text-lg">รวมทั้งหมด</span>}
+                  value={total}
+                  precision={2}
+                  suffix="THB"
+                  valueStyle={{ fontSize: 24, fontWeight: 600 }}
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div className="mt-4">
+                <h3 className="text-base font-medium mb-2">วิธีชำระเงิน</h3>
+                <div className="relative w-full h-12 bg-gray-200 rounded-full flex items-center cursor-pointer">
+                  {/* Sliding background */}
+                  <div
+                    className={`absolute top-0 left-0 w-1/2 h-full p-1 transition-transform duration-300 ease-in-out ${
+                      paymentMethod === "qr_promptpay"
+                        ? "translate-x-full"
+                        : "translate-x-0"
+                    }`}
+                  >
+                    <div className="w-full h-full bg-white rounded-full shadow-md"></div>
+                  </div>
+
+                  {/* Cash Option */}
+                  <div
+                    className="w-1/2 h-full relative z-10 flex items-center justify-center"
+                    onClick={() => setPaymentMethod("cash")}
+                  >
+                    <span
+                      className={`font-semibold transition-colors duration-300 ${
+                        paymentMethod === "cash"
+                          ? "text-gray-800"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      เงินสด
+                    </span>
+                  </div>
+
+                  {/* Scan to Pay Option */}
+                  <div
+                    className="w-1/2 h-full relative z-10 flex items-center justify-center"
+                    onClick={() => setPaymentMethod("qr_promptpay")}
+                  >
+                    <span
+                      className={`font-semibold transition-colors duration-300 ${
+                        paymentMethod === "qr_promptpay"
+                          ? "text-gray-800"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      สแกนจ่าย
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Buttons */}
@@ -609,11 +742,13 @@ const TakeOrderPage: React.FC = () => {
                   onConfirm={clearOrder}
                   okText="ใช่"
                   cancelText="ไม่"
+                  disabled={cart.length === 0 || isSubmitting}
                 >
                   <Button
                     danger
                     icon={<DeleteOutlined />}
                     className="h-12 text-base"
+                    disabled={cart.length === 0 || isSubmitting}
                   >
                     ล้าง
                   </Button>
@@ -622,6 +757,9 @@ const TakeOrderPage: React.FC = () => {
                 <Button
                   type="primary"
                   className="h-12 bg-green-600 text-base"
+                  onClick={handlePlaceOrder}
+                  loading={isSubmitting}
+                  disabled={cart.length === 0 || isSubmitting}
                 >
                   บันทึกออเดอร์
                 </Button>
@@ -630,6 +768,13 @@ const TakeOrderPage: React.FC = () => {
           </div>
         </div>
       </Content>
+      {isQrPopupVisible && (
+        <QRCodePopup
+          amount={total}
+          onClose={() => setIsQrPopupVisible(false)}
+          onPaymentSuccess={() => finalizeOrder("qr_promptpay")}
+        />
+      )}
     </Layout>
   );
 };

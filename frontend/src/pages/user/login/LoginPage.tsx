@@ -26,13 +26,13 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await apiLogin(values);
-      if (response.success === true && response.responseObject.user) {
+      if (response.success === true && response.responseObject.token) {
         Swal.fire({
           title: "Login successful!",
           text: "เข้าสู่ระบบ สำเร็จ",
           icon: "success"
         });
-        authContext?.login(response.responseObject.user);
+        authContext?.login(response.responseObject.token);
         navigate('/');
         message.success(response.message || 'Login successful!');
       } else {

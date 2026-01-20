@@ -69,10 +69,10 @@ const allMenuItems: (MenuItem & { path: string })[] = [
     ...getItem(<Link to="/employees">รายชื่อพนักงาน</Link>, 'employees', <UserOutlined />),
     path: '/employees'
   },
-  {
-    ...getItem(<Link to="/dashboard">แดชบอร์ด</Link>, 'dashboard', <PieChartOutlined />),
-    path: '/dashboard'
-  },
+  // {
+  //   ...getItem(<Link to="/dashboard">แดชบอร์ด</Link>, 'dashboard', <PieChartOutlined />),
+  //   path: '/dashboard'
+  // },
   {
     ...getItem(<Link to="/ai-chat">คุยกับ AI</Link>, 'ai-chat', <MessageOutlined />),
     path: '/ai-chat'

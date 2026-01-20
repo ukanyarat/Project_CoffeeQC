@@ -1,3 +1,4 @@
+
 import React, { useContext } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../auth/auth';
@@ -9,7 +10,7 @@ const ProtectedRoute: React.FC = () => {
     return <div>Error: AuthContext not found</div>;
   }
 
-  return authContext.user ? <Outlet /> : <Navigate to="/login" />;
+  return authContext.user ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;

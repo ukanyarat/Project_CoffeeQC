@@ -205,5 +205,71 @@ export const orderRepository = {
                 customer: true,
             }
         })
+    },
+
+    getSalesAnalyticsByCompany: async (companyId: string, period: string = 'monthly') => {
+        const now = new Date();
+        let startDate: Date;
+        let endDate: Date = now;
+
+        switch (period) {
+            case 'daily':
+                startDate = new Date(now.setHours(0, 0, 0, 0));
+                break;
+            case 'weekly':
+                startDate = new Date(now.setDate(now.getDate() - now.getDay())); // Start of the week (Sunday)
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'monthly':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'yearly':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            default: // Default to monthly if an invalid period is provided
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+        }
+
+        const salesData = await prisma.orderList.groupBy({
+            by: ['menu_id'],
+            where: {
+                company_id: companyId,
+                created_at: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+            _sum: {
+                quantity: true,
+                price: true,
+            },
+        });
+
+        const menuIds = salesData.map(item => item.menu_id);
+        const menus = await prisma.menu.findMany({
+            where: {
+                id: {
+                    in: menuIds,
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+            },
+        });
+
+        const menuMap = new Map(menus.map(menu => [menu.id, menu.name]));
+
+        const result = salesData.map(item => ({
+            menu: menuMap.get(item.menu_id) || 'Unknown Menu',
+            sales: item._sum.quantity || 0,
+            revenue: item._sum.price ? item._sum.price.toNumber() : 0,
+        }));
+
+        return result;
     }
 }

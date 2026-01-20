@@ -48,7 +48,30 @@ export const orderRouter = (() => {
             }
         });
 
-    //update
+    //update with id in URL
+    router.patch("/update/:id",
+        authenticationToken,
+        (req: Request, res: Response, next: any) => {
+            // Insert id from URL into body before validation
+            req.body.id = req.params.id;
+            next();
+        },
+        validateRequest(UpdateOrderSchema),
+        async (req: Request, res: Response) => {
+            try {
+                const payload = req.body;
+                const { companyId, uuid } = req.token.payload;
+                const userId = uuid;
+
+                const ServiceResponse = await orderService.update(companyId, userId, payload);
+                handleServiceResponse(ServiceResponse, res);
+            } catch (error) {
+                console.error("Error in POST request:", error);
+                res.status(500).json({ status: "error", message: "Internal Server Error" });
+            }
+        });
+
+    //update with id in body
     router.patch("/update",
         authenticationToken,
         validateRequest(UpdateOrderSchema),
@@ -57,6 +80,7 @@ export const orderRouter = (() => {
                 const payload = req.body;
                 const { companyId, uuid } = req.token.payload;
                 const userId = uuid;
+
                 const ServiceResponse = await orderService.update(companyId, userId, payload);
                 handleServiceResponse(ServiceResponse, res);
             } catch (error) {
@@ -110,5 +134,26 @@ export const orderRouter = (() => {
                 res.status(500).json({ status: "error", message: "Internal Server Error" });
             }
         });
+
+    router.get("/sales-analytics",
+        authenticationToken,
+        async (req: Request, res: Response) => {
+            try {
+                const { companyId } = req.token.payload;
+                const period = (req.query.period as string || 'monthly').toLowerCase(); // Default to 'monthly'
+
+                const validPeriods = ['daily', 'weekly', 'monthly', 'yearly'];
+                if (!validPeriods.includes(period)) {
+                    return res.status(400).json({ status: "error", message: "Invalid period provided. Must be one of 'daily', 'weekly', 'monthly', 'yearly'." });
+                }
+
+                const serviceResponse = await orderService.getSalesAnalytics(companyId, period);
+                handleServiceResponse(serviceResponse, res);
+            } catch (error) {
+                console.error("Error in GET request:", error);
+                res.status(500).json({ status: "error", message: "Internal Server Error" });
+            }
+        });
+        
     return router;
 })();

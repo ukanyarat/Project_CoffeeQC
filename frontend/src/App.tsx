@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import MenuComponent from './components/menu/menu';
-import { AuthContext } from './auth/AuthContext';
+import { AuthContext } from './auth/auth';
 
 const { Content } = Layout;
 
@@ -25,8 +25,8 @@ const App: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <MenuComponent user={user} />
-      <Layout style={{ background: '#FDF5E6' }}>
-        <Content style={{ margin: '16px' }}>
+      <Layout>
+        <Content style={{ padding: '24px' }}>
           <Outlet />
         </Content>
       </Layout>

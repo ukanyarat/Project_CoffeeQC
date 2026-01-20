@@ -7,18 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        pastel: {
-          bg: "#F7FAFC",
-          card: "#FFFFFF",
-          text: "#1F2937",
-          primary: "#7C9AFF",
-          "primary-dark": "#5677F3",
-          accent: "#FBB6CE",
-          "pastel-orange": "#FFDAB9",
-        },
+        'brand': {
+          primary: '#8D6E63',
+          'primary-focus': '#795548',
+          secondary: '#A1887F',
+          'bg-base': '#FFFFFF',
+          'bg-layout': '#F9F6F2',
+          'text-primary': '#4E342E',
+          'text-secondary': '#5D4037',
+        }
       },
     },
   },
-  darkMode: "class",
   plugins: [],
+  // Important to avoid conflicts with Ant Design's base styles
+  corePlugins: {
+    preflight: false,
+  },
 };

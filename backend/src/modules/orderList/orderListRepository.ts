@@ -81,31 +81,31 @@ export const orderListRepository = {
                     }
                     : {}),
             },
-            // select: {
-            //     id: true,
-            //     price: true,
-            //     quantity: true,
-            //     remark: true,
-            //     status: true,
-            //     created_at: true,
-            //     updated_at: true,
-            //     order: {
-            //         select: {
-            //             id: true,
-            //             order_number: true,
-            //             order_status: true,
-            //         }
-            //     },
-            //     menu: {
-            //         select: {
-            //             id: true,
-            //             name: true,
-            //             type: true,
-            //             price: true,
-            //             stock: true,
-            //         }
-            //     }
-            // },
+            select: {
+                id: true,
+                price: true,
+                quantity: true,
+                remark: true,
+                status: true,
+                created_at: true,
+                updated_at: true,
+                order: {
+                    select: {
+                        id: true,
+                        order_number: true,
+                        order_status: true,
+                    }
+                },
+                menu: {
+                    select: {
+                        id: true,
+                        name: true,
+                        type: true,
+                        price: true,
+                        stock: true,
+                    }
+                }
+            },
             skip,
             take,
             orderBy: [

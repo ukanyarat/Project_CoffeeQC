@@ -2,18 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* (ตัวเลือก) ตั้งพื้นหลังเริ่มต้นให้ทั้งหน้า */
-:root {
-  color-scheme: light;
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F9F6F2; /* Matches theme.token.colorBgLayout */
 }
 
-html,
-body,
 #root {
   height: 100%;
-}
-
-body {
-  /* กันเคสมี CSS อื่นบังคับเป็นขาว */
-  background: transparent;
 }

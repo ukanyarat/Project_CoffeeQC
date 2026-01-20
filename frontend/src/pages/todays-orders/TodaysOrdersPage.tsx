@@ -4,6 +4,7 @@ import { ShoppingOutlined, DollarOutlined, CheckCircleOutlined, ClockCircleOutli
 import { getOrders, getOrderLists, updateOrder } from '../../api';
 import moment from 'moment';
 
+
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -210,30 +211,6 @@ const TodaysOrdersPage: React.FC = () => {
     },
   ];
 
-  const orderListItemColumns = [
-    {
-      title: 'Menu Item',
-      dataIndex: ['menu', 'name'],
-      key: 'menu_name',
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'quantity',
-      key: 'quantity',
-    },
-    {
-      title: 'Price',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price: number) => `${Number(price).toFixed(2)} THB`,
-    },
-    {
-      title: 'Remark',
-      dataIndex: 'remark',
-      key: 'remark',
-      render: (remark: string) => remark || '-',
-    },
-  ];
 
   const statusCounts = getStatusCounts();
 
@@ -244,10 +221,10 @@ const TodaysOrdersPage: React.FC = () => {
         <div style={{ marginBottom: '24px' }}>
           <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
             <CalendarOutlined style={{ color: '#1890ff' }} />
-            Today's Orders
+            คำสั่งซื้อวันนี้
           </Title>
           <Text type="secondary" style={{ fontSize: '16px' }}>
-            {moment().format('dddd, MMMM D, YYYY')}
+            {moment().format('D/M/YY')}
           </Text>
         </div>
 
@@ -264,7 +241,7 @@ const TodaysOrdersPage: React.FC = () => {
                 }}
               >
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>Total Orders</span>}
+                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>ยอดคำสั่งซื้อ</span>}
                   value={orders.length}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
@@ -282,10 +259,10 @@ const TodaysOrdersPage: React.FC = () => {
                 }}
               >
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>Total Revenue</span>}
+                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รายได้รวม</span>}
                   value={totalRevenue}
                   prefix={<DollarOutlined />}
-                  suffix="THB"
+                  suffix="บาท"
                   precision={2}
                   valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
                 />
@@ -302,7 +279,7 @@ const TodaysOrdersPage: React.FC = () => {
                 }}
               >
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>Completed</span>}
+                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รายการที่สำเร็จ</span>}
                   value={Object.keys(statusCounts).filter(s => s.toLowerCase().includes('completed') || s.toLowerCase().includes('done')).reduce((sum, key) => sum + statusCounts[key], 0)}
                   prefix={<CheckCircleOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
@@ -320,7 +297,7 @@ const TodaysOrdersPage: React.FC = () => {
                 }}
               >
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>Pending</span>}
+                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รอดำเนินการ</span>}
                   value={Object.keys(statusCounts).filter(s => s.toLowerCase().includes('pending') || s.toLowerCase().includes('waiting')).reduce((sum, key) => sum + statusCounts[key], 0)}
                   prefix={<ClockCircleOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
@@ -339,13 +316,13 @@ const TodaysOrdersPage: React.FC = () => {
           >
             <Title level={4} style={{ marginBottom: '20px' }}>
               <ShoppingOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-              Order Details
+              รายละเอียดคำสั่งซื้อ
             </Title>
 
             {orders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
                 <ShoppingOutlined style={{ fontSize: '64px', marginBottom: '16px' }} />
-                <div style={{ fontSize: '16px' }}>No orders today</div>
+                <div style={{ fontSize: '16px' }}>ไม่มีรายการคำสั่งซื้อวันนี้</div>
               </div>
             ) : (
               <Collapse
@@ -417,7 +394,7 @@ const TodaysOrdersPage: React.FC = () => {
                         <Col xs={24} sm={8}>
                           <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
                             <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>Service Type</Text>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>รับบริการ</Text>
                               <Text strong style={{ fontSize: '16px' }}>
                                 <CoffeeOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
                                 {order.service}
@@ -428,7 +405,7 @@ const TodaysOrdersPage: React.FC = () => {
                         <Col xs={24} sm={8}>
                           <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
                             <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>Payment</Text>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>วิธีการชำระเงิน</Text>
                               <Text strong style={{ fontSize: '16px' }}>
                                 <span style={{ marginRight: '8px' }}>{getPaymentIcon(order.payment_channel)}</span>
                                 {order.payment_channel}
@@ -439,7 +416,7 @@ const TodaysOrdersPage: React.FC = () => {
                         <Col xs={24} sm={8}>
                           <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
                             <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>Order Time</Text>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>เวลาคำสั่งซื้อ</Text>
                               <Text strong style={{ fontSize: '16px' }}>
                                 <ClockCircleOutlined style={{ marginRight: '8px', color: '#52c41a' }} />
                                 {moment(order.created_at).format('HH:mm:ss')}
@@ -449,7 +426,7 @@ const TodaysOrdersPage: React.FC = () => {
                         </Col>
                       </Row>
 
-                      <Divider style={{ margin: '16px 0' }}>Order Items</Divider>
+                      <Divider style={{ margin: '16px 0' }}>รายการสินค้า</Divider>
 
                       {/* Order Items */}
                       {!orderListItems[order.id] ? (
@@ -498,7 +475,7 @@ const TodaysOrdersPage: React.FC = () => {
                             textAlign: 'right'
                           }}>
                             <Text strong style={{ fontSize: '18px', color: '#000' }}>
-                              Total: ฿{orderListItems[order.id].reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+                              ยอดรวม : ฿{orderListItems[order.id].reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
                             </Text>
                           </div>
                         </div>

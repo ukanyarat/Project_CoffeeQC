@@ -133,49 +133,49 @@ const EmployeesPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'First Name',
+      title: 'ชื่อจริง',
       dataIndex: 'emp_fname',
       key: 'emp_fname',
     },
     {
-      title: 'Last Name',
+      title: 'นามสกุล',
       dataIndex: 'emp_lname',
       key: 'emp_lname',
     },
     {
-      title: 'Phone',
+      title: 'เบอร์โทร',
       dataIndex: 'emp_phone',
       key: 'emp_phone',
     },
     {
-      title: 'Username',
+      title: 'ชื่อผู้ใช้',
       dataIndex: 'username',
       key: 'username',
     },
     {
-      title: 'Role',
+      title: 'ตำแหน่ง',
       dataIndex: ['role', 'role_name'],
       key: 'role_name',
     },
     {
-      title: 'Status',
+      title: 'สถานะ',
       dataIndex: 'emp_status',
       key: 'emp_status',
     },
     {
-      title: 'Start Date',
+      title: 'วันที่เริ่มงาน',
       dataIndex: 'emp_start_date',
       key: 'emp_start_date',
       render: (date: string) => date ? moment(date).format('YYYY-MM-DD') : '-',
     },
     {
-      title: 'Actions',
+      title: '',
       key: 'actions',
       render: (text: any, record: User) => (
         <Space size="middle">
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
-            title="Are you sure to delete this employee?"
+            title="คุณแน่ใจแล้วหรือว่าต้องการลบพนักงานคนนี้ออก?"
             onConfirm={() => handleDelete(record.id)}
             okText="Yes"
             cancelText="No"
@@ -191,11 +191,11 @@ const EmployeesPage: React.FC = () => {
     <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
-          <Title level={3}>Employees Management</Title>
+          <Title level={3}>จัดการข้อมูลพนักงาน</Title>
         </Col>
         <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add New Employee
+            เพิ่มพนักงานใหม่
           </Button>
         </Col>
       </Row>
@@ -205,54 +205,56 @@ const EmployeesPage: React.FC = () => {
       </Spin>
 
       <Modal
-        title={editingUser ? 'Edit Employee' : 'Add New Employee'}
+        title={editingUser ? 'แก้ไขข้อมูลพนักงาน' : 'เพิ่มพนักงานใหม่'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={loading}
+        okText="บันทึก"
+        cancelText="ยกเลิก"
       >
         <Form form={form} layout="vertical" name="employee_form">
           <Form.Item
             name="emp_fname"
-            label="First Name"
+            label="ชื่อจริง"
             rules={[{ required: true, message: 'Please input the first name!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่ชื่อจริง' />
           </Form.Item>
           <Form.Item
             name="emp_lname"
-            label="Last Name"
+            label="นามสกุล"
             rules={[{ required: true, message: 'Please input the last name!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่นามสกุล' />
           </Form.Item>
           <Form.Item
             name="emp_phone"
-            label="Phone"
+            label="เบอร์โทร"
             rules={[{ required: true, message: 'Please input the phone number!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่เบอร์โทร' />
           </Form.Item>
           <Form.Item
             name="username"
-            label="Username"
+            label="ชื่อผู้ใช้"
             rules={[{ required: true, message: 'Please input the username!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่ชื่อผู้ใช้' />
           </Form.Item>
           <Form.Item
             name="password"
-            label="Password"
+            label="รหัสผ่าน"
             rules={[{ required: !editingUser, message: 'Please input the password!' }]}
           >
-            <Input.Password placeholder={editingUser ? 'Leave blank to keep current password' : ''} />
+            <Input.Password placeholder={editingUser ? 'เว้นว่างไว้เพื่อใช้รหัสผ่านปัจจุบัน' : 'กรุณาใส่รหัสผ่าน'} />
           </Form.Item>
           <Form.Item
             name="role_id"
-            label="Role"
+            label="ตำแหน่ง"
             rules={[{ required: true, message: 'Please select a role!' }]}
           >
-            <Select placeholder="Select a role">
+            <Select placeholder="กรุณาเลือกตำแหน่ง">
               {roles.map(role => (
                 <Option key={role.id} value={role.id}>
                   {role.role_name}
@@ -262,15 +264,15 @@ const EmployeesPage: React.FC = () => {
           </Form.Item>
           <Form.Item
             name="emp_status"
-            label="Status"
+            label="สถานะ"
           >
-            <Input />
+            <Input placeholder='กรุณาเลือกสถานะพนักงาน'/>
           </Form.Item>
           <Form.Item
             name="emp_start_date"
-            label="Start Date"
+            label="วันที่เริ่มงาน"
           >
-            <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+            <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" placeholder="เลือกวันที่เริ่มงาน" />
           </Form.Item>
         </Form>
       </Modal>

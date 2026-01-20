@@ -201,7 +201,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ user }) => {
               letterSpacing: '0.5px',
             }}
           >
-            ☕ Coffee Shop
+            Coffee Shop
           </Title>
         )}
       </div>
@@ -280,7 +280,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ user }) => {
                 </Text>
                 <Text
                   style={{
-                    fontSize: '12px',
+                    fontSize: '16px',
                     color: '#A1887F',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',

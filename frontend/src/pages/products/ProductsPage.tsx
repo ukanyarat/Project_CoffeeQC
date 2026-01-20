@@ -154,7 +154,7 @@ const ProductsPage: React.FC = () => {
             <Space align="center">
               <CoffeeOutlined style={{ fontSize: '32px', color: '#8B4513' }} />
               <div>
-                <Title level={2} style={{ margin: 0, color: '#262626' }}>Products Management</Title>
+                <Title level={2} style={{ margin: 0, color: '#262626' }}>จัดการเมนูและสินค้าในร้าน</Title>
                 <Text type="secondary">จัดการเมนูและสินค้าในร้าน</Text>
               </div>
             </Space>
@@ -196,11 +196,11 @@ const ProductsPage: React.FC = () => {
             return (
               <Tabs.TabPane
                 tab={
-                  <Badge count={categoryMenus.length} offset={[10, 0]} showZero>
+                  // <Badge count={categoryMenus.length} offset={[10, 0]} showZero>
                     <span style={{ fontSize: '16px', padding: '0 8px' }}>
-                      {category.category_name}
+                      {category.category_name} <span style={{color:'gray'}}>({categoryMenus.length})</span>
                     </span>
-                  </Badge>
+                  // </Badge>
                 }
                 key={category.id}
               >
@@ -218,10 +218,10 @@ const ProductsPage: React.FC = () => {
                   <Row gutter={[24, 24]} style={{ marginTop: '16px' }}>
                     {categoryMenus.map(menu => (
                       <Col key={menu.id} xs={24} sm={12} md={8} lg={6}>
-                        <Badge.Ribbon
+                        {/* <Badge.Ribbon
                           text={menu.type || 'สินค้า'}
                           color={getTypeColor(menu.type || '')}
-                        >
+                        > */}
                           <Card
                             hoverable
                             style={{
@@ -297,7 +297,7 @@ const ProductsPage: React.FC = () => {
                               }
                             />
                           </Card>
-                        </Badge.Ribbon>
+                        {/* </Badge.Ribbon> */}
                       </Col>
                     ))}
                   </Row>

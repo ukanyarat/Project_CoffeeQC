@@ -24,7 +24,7 @@ const CustomersPage: React.FC = () => {
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const response = await getCustomers(); // Assuming getCustomers fetches all without pagination for now
+      const response = await getCustomers();
       if (response.success && response.responseObject) {
         setCustomers(response.responseObject);
       } else {
@@ -98,37 +98,37 @@ const CustomersPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Name',
+      title: 'ชื่อลูกค้า',
       dataIndex: 'customer_name',
       key: 'customer_name',
     },
     {
-      title: 'Phone',
+      title: 'เบอร์โทรลูกค้า',
       dataIndex: 'customer_phone',
       key: 'customer_phone',
     },
     {
-      title: 'Status',
+      title: 'สถานะลูกค้า',
       dataIndex: 'customer_status',
       key: 'customer_status',
     },
     {
-      title: 'Created At',
+      title: 'วันที่สร้าง',
       dataIndex: 'created_at',
       key: 'created_at',
       render: (text: string) => new Date(text).toLocaleString(),
     },
     {
-      title: 'Actions',
+      title: '',
       key: 'actions',
       render: (text: any, record: Customer) => (
         <Space size="middle">
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Popconfirm
-            title="Are you sure to delete this customer?"
+            title="คุณแน่ใจแล้วหรือว่าต้องการลบข้อมูลลูกค้ารายนี้?"
             onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="ใช่"
+            cancelText="ไม่ใช่"
           >
             <Button icon={<DeleteOutlined />} danger />
           </Popconfirm>
@@ -141,11 +141,11 @@ const CustomersPage: React.FC = () => {
     <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
-          <Title level={3}>Customers Management</Title>
+          <Title level={3}>จัดการข้อมูลลูกค้า</Title>
         </Col>
         <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add New Customer
+            เพิ่มลูกค้าใหม่
           </Button>
         </Col>
       </Row>
@@ -155,32 +155,34 @@ const CustomersPage: React.FC = () => {
       </Spin>
 
       <Modal
-        title={editingCustomer ? 'Edit Customer' : 'Add New Customer'}
+        title={editingCustomer ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มลูกค้าใหม่'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={loading}
+        okText="บันทึก"
+        cancelText="ยกเลิก"
       >
         <Form form={form} layout="vertical" name="customer_form">
           <Form.Item
             name="customer_name"
-            label="Customer Name"
+            label="ชื่อลูกค้า"
             rules={[{ required: true, message: 'Please input the customer name!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่ชื่อลูกค้า'/>
           </Form.Item>
           <Form.Item
             name="customer_phone"
-            label="Customer Phone"
+            label="เบอร์โทรลูกค้า"
             rules={[{ required: true, message: 'Please input the customer phone!' }]}
           >
-            <Input />
+            <Input placeholder='กรุณาใส่เบอร์โทรลูกค้า'/>
           </Form.Item>
           <Form.Item
             name="customer_status"
-            label="Customer Status"
+            label="สถานะลูกค้า"
           >
-            <Input />
+            <Input placeholder='กรุณาเลือกสถานะลูกค้า'/>
           </Form.Item>
         </Form>
       </Modal>

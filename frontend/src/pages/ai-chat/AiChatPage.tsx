@@ -79,9 +79,9 @@ const AiChatPage: React.FC = () => {
 
   return (
     <div style={{ padding: '24px', background: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         {/* Header */}
-        <Card
+        {/* <Card
           bordered={false}
           style={{
             marginBottom: '16px',
@@ -89,19 +89,19 @@ const AiChatPage: React.FC = () => {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <RobotOutlined style={{ fontSize: '32px', color: '#fff' }} />
-            <div>
-              <Title level={3} style={{ margin: 0, color: '#fff' }}>
-                AI Assistant
-              </Title>
-              <Text style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-                ถามคำถามเกี่ยวกับข้อมูลร้านได้เลย
-              </Text>
-            </div>
+        > */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <RobotOutlined style={{ fontSize: '32px' }} />
+          <div>
+            <Title level={3} style={{ margin: 0 }}>
+              AI Assistant
+            </Title>
+            <Text >
+              ถามคำถามเกี่ยวกับข้อมูลร้านได้เลย
+            </Text>
           </div>
-        </Card>
+        </div>
+        {/* </Card> */}
 
         {/* Chat Messages */}
         <Card

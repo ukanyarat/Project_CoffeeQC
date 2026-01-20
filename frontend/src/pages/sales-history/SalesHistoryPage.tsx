@@ -88,61 +88,78 @@ const SalesHistoryPage: React.FC = () => {
       setExpandedRowKeys(prev => prev.filter(key => key !== record.id));
     }
   };
+  const getOrderStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return { color: 'green', text: 'สำเร็จแล้ว' };
+      case 'pending':
+        return { color: 'orange', text: 'รอดำเนินการ' };
+      case 'cancelled':
+        return { color: 'red', text: 'ยกเลิกแล้ว' };
+      case 'processing':
+        return { color: 'blue', text: 'กำลังดำเนินการ' };
+      default:
+        return { color: 'default', text: status };
+    }
+  };
 
   const orderColumns = [
     {
-      title: 'Order Number',
+      title: 'เลขที่คำสั่งซื้อ',
       dataIndex: 'order_number',
       key: 'order_number',
     },
     {
-      title: 'Customer Name',
+      title: 'ชื่อลูกค้า',
       dataIndex: ['customer', 'customer_name'],
       key: 'customer_name',
     },
     {
-      title: 'Status',
+      title: 'สถานะคำสั่งซื้อ',
       dataIndex: 'order_status',
       key: 'order_status',
-      render: (status: string) => <Tag color="blue">{status}</Tag>,
+      render: (status: string) => {
+        const { color, text } = getOrderStatus(status);
+        return <Tag color={color}>{text}</Tag>;
+      },
     },
     {
-      title: 'Service',
+      title: 'ประเภทการให้บริการ',
       dataIndex: 'service',
       key: 'service',
     },
     {
-      title: 'Payment Channel',
+      title: 'ช่องทางการชำระเงิน',
       dataIndex: 'payment_channel',
       key: 'payment_channel',
     },
     {
-      title: 'Created At',
+      title: 'วันที่สร้างคำสั่งซื้อ',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (date: string) => moment(date).format('YYYY-MM-DD HH:mm:ss'),
+      render: (date: string) => moment(date).format('DD-MM-YYYY HH:mm:ss'),
     },
   ];
 
   const orderListItemColumns = [
     {
-      title: 'Menu Item',
+      title: 'รายการเมนู',
       dataIndex: ['menu', 'name'],
       key: 'menu_name',
     },
     {
-      title: 'Quantity',
+      title: 'จำนวน',
       dataIndex: 'quantity',
       key: 'quantity',
     },
     {
-      title: 'Price',
+      title: 'ราคา',
       dataIndex: 'price',
       key: 'price',
-      render: (price: number) => `${Number(price).toFixed(2)} THB`,
+      render: (price: number) => `${Number(price).toFixed(2)} บาท`,
     },
     {
-      title: 'Remark',
+      title: 'หมายเหตุ',
       dataIndex: 'remark',
       key: 'remark',
       render: (remark: string) => remark || '-',
@@ -151,7 +168,7 @@ const SalesHistoryPage: React.FC = () => {
 
   return (
     <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-      <Title level={3}>Sales History</Title>
+      <Title level={3}>ประวัติการขาย</Title>
       <Spin spinning={loading}>
         <Table
           columns={orderColumns}

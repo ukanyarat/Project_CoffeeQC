@@ -1,14 +1,436 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   Coffee Shop POS - Global Styles
+   ======================================== */
+
+:root {
+  /* Coffee Color Palette */
+  --coffee-espresso: #2D2A26;
+  --coffee-dark-roast: #4A3C31;
+  --coffee-medium-roast: #6F4E37;
+  --coffee-light-roast: #8B7355;
+  --coffee-crema: #D4B896;
+  --coffee-cream: #FAF7F2;
+  --coffee-latte: #F8F5F0;
+  --coffee-milk: #FFFFFF;
+
+  /* Status Colors */
+  --color-success: #2E7D32;
+  --color-warning: #F59E0B;
+  --color-error: #DC2626;
+  --color-info: #0EA5E9;
+}
+
+/* Base Styles */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F9F6F2; /* Matches theme.token.colorBgLayout */
+  background-color: var(--coffee-cream);
+  color: var(--coffee-espresso);
 }
 
 #root {
-  height: 100%;
+  min-height: 100vh;
+}
+
+/* ========================================
+   Custom Scrollbar - Coffee Theme
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--coffee-latte);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--coffee-crema);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--coffee-light-roast);
+}
+
+/* ========================================
+   Page Header Styles
+   ======================================== */
+.page-header {
+  @apply mb-6 pb-4 border-b border-brand-border;
+}
+
+.page-title {
+  @apply text-2xl font-bold text-coffee-espresso mb-1;
+}
+
+.page-subtitle {
+  @apply text-sm text-brand-text-secondary;
+}
+
+/* ========================================
+   Card Styles
+   ======================================== */
+.coffee-card {
+  @apply bg-white rounded-coffee-lg shadow-coffee p-6;
+  border: 1px solid rgba(111, 78, 55, 0.06);
+  transition: all 0.3s ease;
+}
+
+.coffee-card:hover {
+  @apply shadow-coffee-md;
+}
+
+.coffee-card-header {
+  @apply flex items-center justify-between mb-4 pb-4 border-b border-brand-border-light;
+}
+
+/* ========================================
+   Stat Card Styles
+   ======================================== */
+.stat-card {
+  @apply rounded-coffee-lg p-5 text-white relative overflow-hidden;
+  min-height: 120px;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.stat-card-coffee {
+  background: linear-gradient(135deg, #6F4E37 0%, #8B6914 100%);
+}
+
+.stat-card-success {
+  background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+}
+
+.stat-card-info {
+  background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+}
+
+.stat-card-warning {
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.stat-card-purple {
+  background: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+}
+
+.stat-card-pink {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+.btn-coffee {
+  @apply bg-coffee-medium-roast text-white font-semibold px-6 py-3 rounded-coffee;
+  transition: all 0.2s ease;
+}
+
+.btn-coffee:hover {
+  @apply bg-coffee-dark-roast;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(111, 78, 55, 0.25);
+}
+
+.btn-coffee:active {
+  transform: translateY(0);
+}
+
+.btn-coffee-outline {
+  @apply border-2 border-coffee-medium-roast text-coffee-medium-roast font-semibold px-6 py-3 rounded-coffee bg-transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-coffee-outline:hover {
+  @apply bg-coffee-medium-roast text-white;
+}
+
+/* ========================================
+   Input Styles
+   ======================================== */
+.coffee-input {
+  @apply border border-brand-border rounded-coffee px-4 py-3 w-full;
+  transition: all 0.2s ease;
+}
+
+.coffee-input:focus {
+  @apply border-coffee-medium-roast outline-none;
+  box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+}
+
+/* ========================================
+   Table Styles
+   ======================================== */
+.coffee-table .ant-table-thead > tr > th {
+  background: var(--coffee-latte) !important;
+  color: var(--coffee-espresso) !important;
+  font-weight: 600;
+  border-bottom: 2px solid var(--coffee-crema) !important;
+}
+
+.coffee-table .ant-table-tbody > tr:hover > td {
+  background: rgba(111, 78, 55, 0.04) !important;
+}
+
+/* ========================================
+   Menu Sidebar Styles
+   ======================================== */
+.coffee-menu .ant-menu-item {
+  margin: 4px 12px !important;
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.coffee-menu .ant-menu-item:hover {
+  background: rgba(111, 78, 55, 0.06) !important;
+}
+
+.coffee-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, #6F4E37 0%, #8B6914 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(111, 78, 55, 0.25);
+}
+
+.coffee-menu .ant-menu-item-selected a,
+.coffee-menu .ant-menu-item-selected .anticon {
+  color: white !important;
+}
+
+.coffee-menu .ant-menu-item a {
+  color: #5C5650;
+  font-weight: 500;
+}
+
+.coffee-menu .ant-menu-item .anticon {
+  color: #8B7355;
+  font-size: 18px;
+}
+
+/* ========================================
+   Order Card Styles (POS)
+   ======================================== */
+.order-item {
+  @apply bg-coffee-latte rounded-coffee p-4 mb-3;
+  border: 1px solid rgba(111, 78, 55, 0.08);
+  transition: all 0.2s ease;
+}
+
+.order-item:hover {
+  border-color: rgba(111, 78, 55, 0.15);
+}
+
+.order-total {
+  background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+  @apply rounded-coffee-lg p-5 text-white;
+}
+
+/* ========================================
+   Product Card Styles
+   ======================================== */
+.product-card {
+  @apply bg-white rounded-coffee-lg overflow-hidden;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(111, 78, 55, 0.06);
+}
+
+.product-card:hover {
+  border-color: var(--coffee-medium-roast);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(111, 78, 55, 0.12);
+}
+
+.product-card-image {
+  @apply h-40 bg-coffee-latte flex items-center justify-center;
+  background: linear-gradient(135deg, #FAF7F2 0%, #F0EBE4 100%);
+}
+
+.product-card-content {
+  @apply p-4;
+}
+
+.product-card-price {
+  @apply text-xl font-bold text-coffee-medium-roast;
+}
+
+/* ========================================
+   Badge & Tag Styles
+   ======================================== */
+.coffee-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.coffee-badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.coffee-badge-warning {
+  @apply bg-amber-100 text-amber-800;
+}
+
+.coffee-badge-error {
+  @apply bg-red-100 text-red-800;
+}
+
+.coffee-badge-info {
+  @apply bg-blue-100 text-blue-800;
+}
+
+/* ========================================
+   Payment Toggle Styles
+   ======================================== */
+.payment-toggle {
+  @apply relative w-full h-14 bg-coffee-latte rounded-full flex items-center cursor-pointer;
+  box-shadow: inset 0 2px 4px rgba(111, 78, 55, 0.1);
+}
+
+.payment-toggle-slider {
+  @apply absolute top-1 w-1/2 h-12 rounded-full transition-transform duration-300;
+  background: linear-gradient(135deg, #6F4E37 0%, #8B6914 100%);
+  box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+}
+
+.payment-toggle-option {
+  @apply w-1/2 h-full relative z-10 flex items-center justify-center font-semibold transition-colors duration-300;
+}
+
+.payment-toggle-option.active {
+  @apply text-white;
+}
+
+.payment-toggle-option:not(.active) {
+  @apply text-coffee-dark-roast;
+}
+
+/* ========================================
+   Chat Styles (AI Chat)
+   ======================================== */
+.chat-message {
+  @apply flex gap-3 mb-4;
+}
+
+.chat-bubble {
+  @apply max-w-[70%] p-4 rounded-coffee-lg;
+}
+
+.chat-bubble-user {
+  background: linear-gradient(135deg, #6F4E37 0%, #8B6914 100%);
+  @apply text-white ml-auto;
+}
+
+.chat-bubble-assistant {
+  @apply bg-coffee-latte text-coffee-espresso;
+}
+
+/* ========================================
+   Loading & Spinner
+   ======================================== */
+.coffee-spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-4 border-coffee-crema border-t-coffee-medium-roast;
+}
+
+/* ========================================
+   Animation Utilities
+   ======================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ========================================
+   Ant Design Overrides
+   ======================================== */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #6F4E37 0%, #5C4030 100%) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(111, 78, 55, 0.25) !important;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #5C4030 0%, #4A3428 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3) !important;
+}
+
+.ant-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(111, 78, 55, 0.06) !important;
+}
+
+.ant-modal-content {
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.ant-tabs-tab {
+  font-weight: 500 !important;
+  padding: 12px 20px !important;
+}
+
+.ant-tabs-tab-active {
+  font-weight: 600 !important;
+}
+
+.ant-input, .ant-select-selector, .ant-picker {
+  border-radius: 10px !important;
+}
+
+.ant-input:focus, .ant-input:hover,
+.ant-select-selector:hover,
+.ant-picker:hover {
+  border-color: #6F4E37 !important;
+}
+
+.ant-input:focus, .ant-select-focused .ant-select-selector,
+.ant-picker-focused {
+  box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1) !important;
+}
+
+/* ========================================
+   Responsive Utilities
+   ======================================== */
+@media (max-width: 768px) {
+  .page-title {
+    @apply text-xl;
+  }
+
+  .stat-card {
+    min-height: 100px;
+  }
+
+  .coffee-card {
+    @apply p-4;
+  }
 }

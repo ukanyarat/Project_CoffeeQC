@@ -8,9 +8,11 @@ import {
   Popconfirm,
   message,
   Divider,
-  Statistic,
   Card,
   Badge,
+  Typography,
+  Empty,
+  Spin,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,6 +21,8 @@ import {
   DeleteOutlined,
   SearchOutlined,
   CoffeeOutlined,
+  ShoppingCartOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -33,6 +37,7 @@ import QRCodePopup from "../../components/common/QRCodePopup";
 
 const { Content } = Layout;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 interface Category {
   id: string;
@@ -69,13 +74,10 @@ const TakeOrderPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isQrPopupVisible, setIsQrPopupVisible] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr_promptpay">(
-    "cash"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr_promptpay">("cash");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
-  // Fetch data
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -92,23 +94,15 @@ const TakeOrderPage: React.FC = () => {
     load();
   }, []);
 
-  // Filter products based on search term and active category
   const filteredProducts = useMemo(() => {
     let filtered = products;
-
-    // Filter by category
     if (activeCategory !== "all") {
       filtered = filtered.filter((p) => p.category_id === activeCategory);
     }
-
-    // Filter by search term
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(search)
-      );
+      filtered = filtered.filter((p) => p.name.toLowerCase().includes(search));
     }
-
     return filtered;
   }, [products, activeCategory, searchTerm]);
 
@@ -127,9 +121,7 @@ const TakeOrderPage: React.FC = () => {
     setCart((prev) =>
       prev
         .map((i) =>
-          i.id === id
-            ? { ...i, quantity: Math.max(0, i.quantity + change) }
-            : i
+          i.id === id ? { ...i, quantity: Math.max(0, i.quantity + change) } : i
         )
         .filter((i) => i.quantity > 0)
     );
@@ -158,6 +150,7 @@ const TakeOrderPage: React.FC = () => {
   };
 
   const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const clearOrder = () => {
     setCart([]);
@@ -165,9 +158,7 @@ const TakeOrderPage: React.FC = () => {
     message.info("ล้างออเดอร์แล้ว");
   };
 
-  const finalizeOrder = async (
-    paymentChannel: "cash" | "qr_promptpay"
-  ) => {
+  const finalizeOrder = async (paymentChannel: "cash" | "qr_promptpay") => {
     if (cart.length === 0 || !selectedCustomer) return;
 
     setIsSubmitting(true);
@@ -220,31 +211,45 @@ const TakeOrderPage: React.FC = () => {
     }
 
     if (paymentMethod === "qr_promptpay") {
-      setIsSubmitting(true); // Start loading
+      setIsSubmitting(true);
       setTimeout(() => {
-        setIsSubmitting(false); // Stop loading after a delay
-        setIsQrPopupVisible(true); // Then show the popup
-      }, 500); // 0.5-second delay to simulate processing
+        setIsSubmitting(false);
+        setIsQrPopupVisible(true);
+      }, 500);
     } else {
       finalizeOrder("cash");
     }
   };
 
   return (
-    <Layout className="bg-[#F8F5EE] min-h-screen p-6 font-[Kanit]">
+    <Layout className="bg-coffee-cream min-h-screen p-4 md:p-6">
       <Content>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT: MENU */}
-          <div className="md:col-span-2">
-            <div className="bg-white rounded-2xl shadow p-6">
+          <div className="lg:col-span-2">
+            <Card
+              className="!rounded-2xl !shadow-coffee-md"
+              styles={{ body: { padding: '24px' } }}
+            >
+              {/* Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  เมนูทั้งหมด
-                </h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-coffee-gradient flex items-center justify-center">
+                    <CoffeeOutlined className="text-xl text-white" />
+                  </div>
+                  <div>
+                    <Title level={4} className="!mb-0 !text-coffee-espresso">
+                      เมนูทั้งหมด
+                    </Title>
+                    <Text className="text-brand-text-secondary text-sm">
+                      เลือกเมนูเพื่อเพิ่มในออเดอร์
+                    </Text>
+                  </div>
+                </div>
                 <Badge
                   count={filteredProducts.length}
                   showZero
-                  style={{ backgroundColor: "#52c41a" }}
+                  style={{ backgroundColor: '#6F4E37' }}
                 />
               </div>
 
@@ -253,10 +258,10 @@ const TakeOrderPage: React.FC = () => {
                 <Input
                   size="large"
                   placeholder="ค้นหาเมนู..."
-                  prefix={<SearchOutlined className="text-gray-400" />}
+                  prefix={<SearchOutlined className="text-coffee-light-roast" />}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="rounded-xl"
+                  className="!rounded-xl !h-12"
                   allowClear
                 />
               </div>
@@ -265,12 +270,12 @@ const TakeOrderPage: React.FC = () => {
               <Tabs
                 activeKey={activeCategory}
                 onChange={setActiveCategory}
-                className="menu-tabs"
+                className="coffee-tabs"
                 items={[
                   {
                     key: "all",
                     label: (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 font-medium">
                         <CoffeeOutlined />
                         ทั้งหมด
                       </span>
@@ -278,36 +283,48 @@ const TakeOrderPage: React.FC = () => {
                   },
                   ...categories.map((c) => ({
                     key: c.id,
-                    label: c.category_name,
+                    label: <span className="font-medium">{c.category_name}</span>,
                   })),
                 ]}
               />
 
               {/* Products Grid */}
               {loading ? (
-                <div className="text-center py-20 text-gray-500">
-                  กำลังโหลด...
+                <div className="flex items-center justify-center py-20">
+                  <Spin size="large" />
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">
-                  ไม่พบเมนูที่ค้นหา
-                </div>
+                <Empty
+                  description="ไม่พบเมนูที่ค้นหา"
+                  className="py-20"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {filteredProducts.map((p) => (
-                    <Card
-                      key={p.id}
-                      hoverable
-                      className="rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-400 transition-all duration-300"
-                      onClick={() => addToCart(p)}
-                      cover={
-                        <div className="h-40 bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center relative overflow-hidden">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+                  {filteredProducts.map((p) => {
+                    const cartItem = cart.find((i) => i.id === p.id);
+                    return (
+                      <div
+                        key={p.id}
+                        className={`product-card cursor-pointer relative ${
+                          cartItem ? '!border-coffee-medium-roast' : ''
+                        }`}
+                        onClick={() => addToCart(p)}
+                      >
+                        {/* Quantity Badge */}
+                        {cartItem && (
+                          <div className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-coffee-medium-roast text-white flex items-center justify-center font-bold text-sm shadow-md">
+                            {cartItem.quantity}
+                          </div>
+                        )}
+
+                        {/* Image */}
+                        <div className="product-card-image">
                           <img
                             alt={p.name}
                             src={p.image_url || `https://coffee.alexflipnote.dev/random?t=${p.id}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              // Fallback to coffee icon if image fails to load
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
                               if (target.nextElementSibling) {
@@ -315,57 +332,64 @@ const TakeOrderPage: React.FC = () => {
                               }
                             }}
                           />
-                          <div className="hidden flex-col items-center justify-center absolute inset-0 bg-gradient-to-br from-orange-100 to-amber-100">
-                            <CoffeeOutlined className="text-6xl text-amber-600 opacity-50" />
-                            <span className="text-xs text-gray-400 mt-2">
-                              ไม่สามารถโหลดรูปได้
-                            </span>
+                          <div className="hidden flex-col items-center justify-center absolute inset-0 bg-coffee-gradient-light">
+                            <CoffeeOutlined className="text-5xl text-coffee-crema" />
                           </div>
                         </div>
-                      }
-                    >
-                      <div className="p-2">
-                        <h3 className="text-base font-semibold text-gray-800 mb-1 line-clamp-1">
-                          {p.name}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-green-600">
-                            ฿{p.price}
-                          </span>
-                          <Button
-                            type="primary"
-                            size="small"
-                            icon={<PlusOutlined />}
-                            className="bg-blue-500 hover:bg-blue-600 rounded-lg"
-                          >
-                            เพิ่ม
-                          </Button>
+
+                        {/* Content */}
+                        <div className="product-card-content">
+                          <h3 className="text-sm font-semibold text-coffee-espresso mb-2 line-clamp-2 min-h-[40px]">
+                            {p.name}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <span className="product-card-price">
+                              ฿{p.price}
+                            </span>
+                            <Button
+                              type="primary"
+                              size="small"
+                              icon={<PlusOutlined />}
+                              className="!rounded-lg !h-8"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
-            </div>
+            </Card>
           </div>
 
           {/* RIGHT: ORDER SUMMARY */}
           <div>
-            <div className="bg-white rounded-2xl shadow-lg p-5 sticky top-6">
+            <Card
+              className="!rounded-2xl !shadow-coffee-lg sticky top-6"
+              styles={{ body: { padding: '20px' } }}
+            >
+              {/* Header */}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  ออเดอร์ปัจจุบัน
-                </h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                    <ShoppingCartOutlined className="text-lg text-white" />
+                  </div>
+                  <div>
+                    <Title level={5} className="!mb-0 !text-coffee-espresso">
+                      ออเดอร์ปัจจุบัน
+                    </Title>
+                  </div>
+                </div>
                 <Badge
-                  count={cart.reduce((sum, item) => sum + item.quantity, 0)}
+                  count={totalItems}
                   showZero
-                  style={{ backgroundColor: "#1890ff" }}
+                  style={{ backgroundColor: '#0EA5E9' }}
                 />
               </div>
 
-              {/* Customer */}
+              {/* Customer Select */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-coffee-dark-roast mb-2">
                   ลูกค้า
                 </label>
                 <Select
@@ -375,23 +399,28 @@ const TakeOrderPage: React.FC = () => {
                   onChange={setSelectedCustomer}
                   className="w-full"
                   size="large"
+                  filterOption={(input, option) =>
+                    (option?.children as unknown as string)
+                      ?.toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   dropdownRender={(menu) => (
                     <>
                       {menu}
-                      <Divider className="my-2" />
-                      <div className="px-3 pb-2">
-                        <div className="text-sm font-semibold mb-2 text-gray-700">
+                      <Divider className="!my-2" />
+                      <div className="px-3 pb-3">
+                        <div className="text-sm font-semibold mb-2 text-coffee-dark-roast">
                           เพิ่มลูกค้าใหม่
                         </div>
                         <Input
                           placeholder="ชื่อลูกค้าใหม่"
-                          className="mb-2"
+                          className="mb-2 !rounded-lg"
                           value={newCustomerName}
                           onChange={(e) => setNewCustomerName(e.target.value)}
                         />
                         <Input
                           placeholder="เบอร์โทร"
-                          className="mb-2"
+                          className="mb-2 !rounded-lg"
                           type="number"
                           maxLength={10}
                           value={newCustomerPhone}
@@ -402,7 +431,7 @@ const TakeOrderPage: React.FC = () => {
                           type="primary"
                           onClick={handleAddCustomer}
                           block
-                          className="bg-blue-500"
+                          className="!rounded-lg"
                         >
                           เพิ่มลูกค้า
                         </Button>
@@ -418,39 +447,39 @@ const TakeOrderPage: React.FC = () => {
                 </Select>
               </div>
 
-              <Divider className="my-4" />
+              <Divider className="!my-4" />
 
               {/* Order List */}
               {cart.length === 0 ? (
-                <div className="text-center py-10 text-gray-400">
-                  <CoffeeOutlined className="text-5xl mb-3 opacity-30" />
-                  <p>ยังไม่มีรายการในตะกร้า</p>
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-coffee-latte flex items-center justify-center mb-4">
+                    <CoffeeOutlined className="text-3xl text-coffee-crema" />
+                  </div>
+                  <Text className="text-brand-text-muted">
+                    ยังไม่มีรายการในตะกร้า
+                  </Text>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[350px] overflow-auto pr-2 mb-4">
+                <div className="space-y-3 max-h-[320px] overflow-auto pr-1 mb-4">
                   {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl px-4 py-3 shadow-sm border border-gray-200"
-                    >
+                    <div key={item.id} className="order-item">
                       <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-800">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="font-semibold text-coffee-espresso text-sm truncate">
                             {item.name}
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            ฿{item.price} × {item.quantity} = ฿
-                            {item.price * item.quantity}
+                          <div className="text-xs text-brand-text-secondary mt-1">
+                            ฿{item.price} x {item.quantity} = <span className="font-semibold text-coffee-medium-roast">฿{item.price * item.quantity}</span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2 ml-2">
+                        <div className="flex items-center gap-1">
                           <button
                             className="w-7 h-7 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                             onClick={() => updateQty(item.id, -1)}
                           >
                             <MinusOutlined className="text-xs" />
                           </button>
-                          <span className="w-8 text-center font-bold text-gray-700">
+                          <span className="w-8 text-center font-bold text-coffee-espresso text-sm">
                             {item.quantity}
                           </span>
                           <button
@@ -463,9 +492,9 @@ const TakeOrderPage: React.FC = () => {
                       </div>
 
                       <Input.TextArea
-                        className="mt-2 rounded-lg text-sm"
+                        className="!mt-2 !rounded-lg !text-xs"
                         autoSize={{ minRows: 1, maxRows: 2 }}
-                        placeholder="หมายเหตุ เช่น หวานน้อย ไม่ใส่น้ำแข็ง"
+                        placeholder="หมายเหตุ เช่น หวานน้อย"
                         value={item.notes}
                         onChange={(e) =>
                           setCart((prev) =>
@@ -482,78 +511,59 @@ const TakeOrderPage: React.FC = () => {
                 </div>
               )}
 
-              <Divider className="my-4" />
+              <Divider className="!my-4" />
 
               {/* Total */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-200">
+              <div className="order-total mb-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium text-gray-700">
-                    ยอดรวมทั้งหมด
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <DollarOutlined className="text-xl" />
+                    <span className="text-base font-medium">ยอดรวมทั้งหมด</span>
+                  </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-green-600">
+                    <div className="text-2xl font-bold">
                       ฿{total.toFixed(2)}
                     </div>
                     {cart.length > 0 && (
-                      <div className="text-xs text-gray-500">
-                        {cart.reduce((sum, item) => sum + item.quantity, 0)}{" "}
-                        รายการ
-                      </div>
+                      <div className="text-xs opacity-80">{totalItems} รายการ</div>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Payment Method */}
-              <div className="mt-5">
-                <h3 className="text-sm font-semibold mb-3 text-gray-700">
+              <div className="mb-5">
+                <h3 className="text-sm font-semibold mb-3 text-coffee-dark-roast">
                   วิธีชำระเงิน
                 </h3>
-                <div className="relative w-full h-12 bg-gray-200 rounded-full flex items-center cursor-pointer shadow-inner">
-                  {/* Sliding background */}
+                <div className="payment-toggle">
                   <div
-                    className={`absolute top-0 left-0 w-1/2 h-full p-1 transition-transform duration-300 ease-in-out ${paymentMethod === "qr_promptpay"
-                      ? "translate-x-full"
-                      : "translate-x-0"
-                      }`}
-                  >
-                    <div className="w-full h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg"></div>
-                  </div>
-
-                  {/* Cash Option */}
+                    className={`payment-toggle-slider ${
+                      paymentMethod === "qr_promptpay" ? "translate-x-full" : ""
+                    }`}
+                    style={{ left: '4px' }}
+                  />
                   <div
-                    className="w-1/2 h-full relative z-10 flex items-center justify-center"
+                    className={`payment-toggle-option ${
+                      paymentMethod === "cash" ? "active" : ""
+                    }`}
                     onClick={() => setPaymentMethod("cash")}
                   >
-                    <span
-                      className={`font-semibold transition-colors duration-300 ${paymentMethod === "cash"
-                        ? "text-white"
-                        : "text-gray-600"
-                        }`}
-                    >
-                      💵 เงินสด
-                    </span>
+                    <span className="text-sm">เงินสด</span>
                   </div>
-
-                  {/* Scan to Pay Option */}
                   <div
-                    className="w-1/2 h-full relative z-10 flex items-center justify-center"
+                    className={`payment-toggle-option ${
+                      paymentMethod === "qr_promptpay" ? "active" : ""
+                    }`}
                     onClick={() => setPaymentMethod("qr_promptpay")}
                   >
-                    <span
-                      className={`font-semibold transition-colors duration-300 ${paymentMethod === "qr_promptpay"
-                        ? "text-white"
-                        : "text-gray-600"
-                        }`}
-                    >
-                      📱 สแกนจ่าย
-                    </span>
+                    <span className="text-sm">สแกนจ่าย</span>
                   </div>
                 </div>
               </div>
 
               {/* Buttons */}
-              <div className="grid grid-cols-2 gap-3 mt-6">
+              <div className="grid grid-cols-2 gap-3">
                 <Popconfirm
                   title="ล้างออเดอร์?"
                   description="คุณแน่ใจหรือว่าต้องการล้างรายการทั้งหมด?"
@@ -561,11 +571,12 @@ const TakeOrderPage: React.FC = () => {
                   okText="ใช่"
                   cancelText="ไม่"
                   disabled={cart.length === 0 || isSubmitting}
+                  okButtonProps={{ danger: true }}
                 >
                   <Button
                     danger
                     icon={<DeleteOutlined />}
-                    className="h-14 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    className="!h-12 !text-sm !font-semibold !rounded-xl"
                     disabled={cart.length === 0 || isSubmitting}
                     size="large"
                   >
@@ -575,7 +586,11 @@ const TakeOrderPage: React.FC = () => {
 
                 <Button
                   type="primary"
-                  className="h-14 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all border-0"
+                  className="!h-12 !text-sm !font-semibold !rounded-xl"
+                  style={{
+                    background: cart.length === 0 ? undefined : 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+                    border: 'none',
+                  }}
                   onClick={handlePlaceOrder}
                   loading={isSubmitting}
                   disabled={cart.length === 0 || isSubmitting}
@@ -584,10 +599,11 @@ const TakeOrderPage: React.FC = () => {
                   บันทึกออเดอร์
                 </Button>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </Content>
+
       {isQrPopupVisible && (
         <QRCodePopup
           amount={total}
@@ -600,4 +616,3 @@ const TakeOrderPage: React.FC = () => {
 };
 
 export default TakeOrderPage;
-

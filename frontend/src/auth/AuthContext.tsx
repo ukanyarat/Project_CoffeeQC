@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { logout as apiLogout } from '../api';
 import { AuthContext } from './auth';

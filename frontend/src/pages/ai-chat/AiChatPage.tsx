@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, Input, Button, Typography, Space, message, Spin, Avatar } from 'antd';
-import { SendOutlined, RobotOutlined, UserOutlined, CoffeeOutlined } from '@ant-design/icons';
+import { SendOutlined, RobotOutlined, UserOutlined, CoffeeOutlined, BulbOutlined } from '@ant-design/icons';
 import { sendChatMessage } from '../../api/ai';
 import ReactMarkdown from 'react-markdown';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-// Define ChatMessage type locally
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -33,8 +32,6 @@ const AiChatPage: React.FC = () => {
 
     const userMessage = inputMessage.trim();
     setInputMessage('');
-
-    // Add user message to UI
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
 
@@ -45,19 +42,17 @@ const AiChatPage: React.FC = () => {
       });
 
       if (response.success && response.responseObject) {
-        // Add AI response to UI
+        const responseData = response.responseObject;
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', content: response.responseObject.response },
+          { role: 'assistant', content: responseData.response },
         ]);
-
-        // Update conversation history
-        setConversationHistory(response.responseObject.conversationHistory);
+        setConversationHistory(responseData.conversationHistory);
       } else {
-        message.error(response.message || 'Failed to get response');
+        message.error(response.message || 'ไม่สามารถรับคำตอบได้');
       }
     } catch (error: any) {
-      message.error(error.message || 'Error sending message');
+      message.error(error.message || 'เกิดข้อผิดพลาด');
     } finally {
       setLoading(false);
     }
@@ -78,68 +73,66 @@ const AiChatPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: 'calc(100vh - 64px)' }}>
-      <div style={{ margin: '0 auto' }}>
+    <div className="p-4 md:p-6 bg-coffee-cream min-h-screen">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        {/* <Card
-          bordered={false}
-          style={{
-            marginBottom: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          }}
-        > */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <RobotOutlined style={{ fontSize: '32px' }} />
-          <div>
-            <Title level={3} style={{ margin: 0 }}>
-              AI Assistant
-            </Title>
-            <Text >
-              ถามคำถามเกี่ยวกับข้อมูลร้านได้เลย
-            </Text>
+        <Card
+          className="!rounded-2xl !shadow-coffee-md !mb-6"
+          styles={{ body: { padding: '20px 24px' } }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-coffee-gradient flex items-center justify-center shadow-coffee-md">
+              <RobotOutlined className="text-2xl text-white" />
+            </div>
+            <div>
+              <Title level={2} className="!mb-0 !text-coffee-espresso">
+                AI Assistant
+              </Title>
+              <Text className="text-brand-text-secondary">
+                ถามคำถามเกี่ยวกับข้อมูลร้านได้เลย
+              </Text>
+            </div>
           </div>
-        </div>
-        {/* </Card> */}
+        </Card>
 
         {/* Chat Messages */}
         <Card
-          bordered={false}
-          style={{
-            height: 'calc(100vh - 340px)',
-            overflowY: 'auto',
-            marginBottom: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          className="!rounded-2xl !shadow-coffee-md !mb-4"
+          styles={{
+            body: {
+              height: 'calc(100vh - 380px)',
+              minHeight: '400px',
+              overflowY: 'auto',
+              padding: '24px',
+            },
           }}
         >
           {messages.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#999' }}>
-              <RobotOutlined style={{ fontSize: '64px', marginBottom: '16px', color: '#ddd' }} />
-              <div style={{ fontSize: '18px', marginBottom: '24px' }}>
-                สวัสดีค่ะ! ถามคำถามเกี่ยวกับร้านได้เลย
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-24 h-24 rounded-full bg-coffee-latte flex items-center justify-center mb-6">
+                <CoffeeOutlined className="text-5xl text-coffee-crema" />
               </div>
+              <Title level={4} className="!text-coffee-espresso !mb-2">
+                สวัสดีค่ะ!
+              </Title>
+              <Text className="text-brand-text-secondary mb-8 max-w-md">
+                ฉันคือ AI Assistant พร้อมช่วยตอบคำถามเกี่ยวกับข้อมูลร้านกาแฟของคุณ
+              </Text>
 
               {/* Suggested Questions */}
-              <div style={{ marginTop: '24px' }}>
-                <Text strong style={{ fontSize: '14px', color: '#666' }}>
-                  ลองถามคำถามเหล่านี้:
-                </Text>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px', justifyContent: 'center' }}>
+              <div className="mt-4 w-full max-w-lg">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <BulbOutlined className="text-coffee-caramel" />
+                  <Text strong className="text-coffee-dark-roast text-sm">
+                    ลองถามคำถามเหล่านี้:
+                  </Text>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center">
                   {suggestedQuestions.map((question, index) => (
                     <Button
                       key={index}
-                      size="small"
-                      onClick={() => {
-                        setInputMessage(question);
-                      }}
-                      style={{
-                        borderRadius: '16px',
-                        background: '#f5f5f5',
-                        border: 'none',
-                        color: '#666',
-                      }}
+                      onClick={() => setInputMessage(question)}
+                      className="!rounded-full !border-coffee-crema !text-coffee-dark-roast hover:!bg-coffee-latte hover:!border-coffee-medium-roast"
                     >
                       {question}
                     </Button>
@@ -148,80 +141,69 @@ const AiChatPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space direction="vertical" size="large" className="w-full">
               {messages.map((msg, index) => (
                 <div
                   key={index}
-                  style={{
-                    display: 'flex',
-                    gap: '12px',
-                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  }}
+                  className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
                     <Avatar
                       icon={<RobotOutlined />}
-                      style={{ background: '#667eea', flexShrink: 0 }}
+                      size={40}
+                      className="flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #6F4E37 0%, #8B6914 100%)' }}
                     />
                   )}
 
                   <div
-                    style={{
-                      maxWidth: '70%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      background: msg.role === 'user' ? '#1890ff' : '#f5f5f5',
-                      color: msg.role === 'user' ? '#fff' : '#000',
-                    }}
+                    className={`chat-bubble ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'}`}
+                    style={{ maxWidth: '75%' }}
                   >
                     {msg.role === 'assistant' ? (
                       <ReactMarkdown
                         components={{
-                          p: ({ children }) => <div style={{ marginBottom: '8px' }}>{children}</div>,
-                          ul: ({ children }) => <ul style={{ marginLeft: '20px', marginBottom: '8px' }}>{children}</ul>,
-                          ol: ({ children }) => <ol style={{ marginLeft: '20px', marginBottom: '8px' }}>{children}</ol>,
-                          li: ({ children }) => <li style={{ marginBottom: '4px' }}>{children}</li>,
-                          strong: ({ children }) => <strong style={{ fontWeight: 600 }}>{children}</strong>,
+                          p: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
+                          ul: ({ children }) => <ul className="ml-5 mb-2 list-disc">{children}</ul>,
+                          ol: ({ children }) => <ol className="ml-5 mb-2 list-decimal">{children}</ol>,
+                          li: ({ children }) => <li className="mb-1">{children}</li>,
+                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
                           code: ({ children }) => (
-                            <code style={{
-                              background: '#e8e8e8',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '13px',
-                            }}>{children}</code>
+                            <code className="bg-white/20 px-2 py-0.5 rounded text-sm">{children}</code>
                           ),
                         }}
                       >
                         {msg.content}
                       </ReactMarkdown>
                     ) : (
-                      <Text style={{ color: 'inherit' }}>{msg.content}</Text>
+                      <Text className="text-white">{msg.content}</Text>
                     )}
                   </div>
 
                   {msg.role === 'user' && (
                     <Avatar
                       icon={<UserOutlined />}
-                      style={{ background: '#1890ff', flexShrink: 0 }}
+                      size={40}
+                      className="flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #6F4E37 0%, #8B6914 100%)' }}
                     />
                   )}
                 </div>
               ))}
 
               {loading && (
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div className="flex gap-3">
                   <Avatar
                     icon={<RobotOutlined />}
-                    style={{ background: '#667eea', flexShrink: 0 }}
+                    size={40}
+                    className="flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #6F4E37 0%, #8B6914 100%)' }}
                   />
-                  <div
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      background: '#f5f5f5',
-                    }}
-                  >
-                    <Spin size="small" /> <Text type="secondary">กำลังคิด...</Text>
+                  <div className="chat-bubble chat-bubble-assistant">
+                    <div className="flex items-center gap-2">
+                      <Spin size="small" />
+                      <Text className="text-brand-text-secondary">กำลังคิด...</Text>
+                    </div>
                   </div>
                 </div>
               )}
@@ -233,21 +215,19 @@ const AiChatPage: React.FC = () => {
 
         {/* Input Area */}
         <Card
-          bordered={false}
-          style={{
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-          }}
+          className="!rounded-2xl !shadow-coffee-md"
+          styles={{ body: { padding: '16px 20px' } }}
         >
-          <Space.Compact style={{ width: '100%' }}>
+          <div className="flex gap-3">
             <TextArea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="พิมพ์คำถามของคุณ... (Shift+Enter เพื่อขึ้นบรรทัดใหม่, Enter เพื่อส่ง)"
+              placeholder="พิมพ์คำถามของคุณ... (Enter เพื่อส่ง, Shift+Enter ขึ้นบรรทัดใหม่)"
               autoSize={{ minRows: 1, maxRows: 4 }}
               disabled={loading}
-              style={{ borderRadius: '8px 0 0 8px' }}
+              className="!rounded-xl !border-brand-border"
+              size="large"
             />
             <Button
               type="primary"
@@ -255,16 +235,16 @@ const AiChatPage: React.FC = () => {
               onClick={handleSendMessage}
               loading={loading}
               disabled={!inputMessage.trim()}
+              className="!h-auto !px-6 !rounded-xl"
               style={{
-                height: 'auto',
-                borderRadius: '0 8px 8px 0',
-                paddingLeft: '24px',
-                paddingRight: '24px',
+                background: inputMessage.trim()
+                  ? 'linear-gradient(135deg, #6F4E37 0%, #5C4030 100%)'
+                  : undefined,
               }}
             >
               ส่ง
             </Button>
-          </Space.Compact>
+          </div>
         </Card>
       </div>
     </div>

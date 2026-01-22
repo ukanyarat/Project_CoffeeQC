@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Typography, message, Spin, Tag, Row, Col, Statistic, Collapse, Space, Divider, Button, Popconfirm } from 'antd';
-import { ShoppingOutlined, DollarOutlined, CheckCircleOutlined, ClockCircleOutlined, CoffeeOutlined, UserOutlined, CreditCardOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Typography, message, Spin, Tag, Row, Col, Statistic, Collapse, Space, Divider, Button, Popconfirm, Empty } from 'antd';
+import { ShoppingOutlined, DollarOutlined, CheckCircleOutlined, ClockCircleOutlined, CoffeeOutlined, UserOutlined, CalendarOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getOrders, getOrderLists, updateOrder } from '../../api';
 import moment from 'moment';
 
-
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 
 interface Customer {
   id: string;
@@ -44,7 +42,6 @@ interface OrderListItem {
 const TodaysOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [orderListItems, setOrderListItems] = useState<{ [orderId: string]: OrderListItem[] }>({});
   const [totalRevenue, setTotalRevenue] = useState(0);
 
@@ -57,7 +54,6 @@ const TodaysOrdersPage: React.FC = () => {
       if (ordersResponse.success && ordersResponse.responseObject?.data) {
         setOrders(ordersResponse.responseObject.data);
 
-        // Fetch all order lists to calculate total revenue
         const allOrderIds = ordersResponse.responseObject.data.map((order: Order) => order.id);
         let revenue = 0;
 
@@ -73,10 +69,10 @@ const TodaysOrdersPage: React.FC = () => {
 
         setTotalRevenue(revenue);
       } else {
-        message.error(ordersResponse.message || 'Failed to fetch today\'s orders.');
+        message.error(ordersResponse.message || 'ไม่สามารถโหลดข้อมูลออเดอร์ได้');
       }
     } catch (error: any) {
-      message.error('Error fetching today\'s orders: ' + error.message);
+      message.error('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -87,27 +83,17 @@ const TodaysOrdersPage: React.FC = () => {
   }, []);
 
   const fetchOrderListForOrder = async (orderId: string) => {
-    if (orderListItems[orderId]) return; // Already fetched
+    if (orderListItems[orderId]) return;
 
     try {
       const orderListResponse = await getOrderLists({ orderId: orderId });
       if (orderListResponse.success && orderListResponse.responseObject?.data) {
-        console.log('Order List Items Data:', orderListResponse.responseObject.data);
         setOrderListItems(prev => ({ ...prev, [orderId]: orderListResponse.responseObject.data }));
       } else {
-        message.error(orderListResponse.message || `Failed to fetch order list for order ${orderId}.`);
+        message.error(orderListResponse.message || `ไม่สามารถโหลดรายการสินค้าได้`);
       }
     } catch (error: any) {
-      message.error(`Error fetching order list for order ${orderId}: ` + error.message);
-    }
-  };
-
-  const handleExpand = (expanded: boolean, record: Order) => {
-    if (expanded) {
-      setExpandedRowKeys(prev => [...prev, record.id]);
-      fetchOrderListForOrder(record.id);
-    } else {
-      setExpandedRowKeys(prev => prev.filter(key => key !== record.id));
+      message.error(`เกิดข้อผิดพลาด: ` + error.message);
     }
   };
 
@@ -115,17 +101,15 @@ const TodaysOrdersPage: React.FC = () => {
     try {
       const response = await updateOrder(orderId, { order_status: 'completed' });
       if (response.success) {
-        message.success('Order marked as completed!');
-        fetchTodaysOrders(); // Refresh the orders list
+        message.success('อัปเดตสถานะเรียบร้อย!');
+        fetchTodaysOrders();
       } else {
-        message.error(response.message || 'Failed to update order status');
+        message.error(response.message || 'ไม่สามารถอัปเดตสถานะได้');
       }
     } catch (error: any) {
-      message.error('Error updating order: ' + error.message);
+      message.error('เกิดข้อผิดพลาด: ' + error.message);
     }
   };
-
-  // Calculate statistics (removed getTotalRevenue as we now use state)
 
   const getStatusCounts = () => {
     const counts: { [key: string]: number } = {};
@@ -146,342 +130,264 @@ const TodaysOrdersPage: React.FC = () => {
 
   const getPaymentIcon = (channel: string) => {
     const channelLower = channel.toLowerCase();
-    if (channelLower.includes('cash')) return '💵';
-    if (channelLower.includes('card') || channelLower.includes('credit')) return '💳';
-    if (channelLower.includes('qr') || channelLower.includes('promptpay')) return '📱';
-    return '💰';
+    if (channelLower.includes('cash')) return { icon: '💵', label: 'เงินสด' };
+    if (channelLower.includes('card') || channelLower.includes('credit')) return { icon: '💳', label: 'บัตรเครดิต' };
+    if (channelLower.includes('qr') || channelLower.includes('promptpay')) return { icon: '📱', label: 'PromptPay' };
+    return { icon: '💰', label: channel };
   };
 
-  const orderColumns = [
-    {
-      title: 'Order Number',
-      dataIndex: 'order_number',
-      key: 'order_number',
-    },
-    {
-      title: 'Customer Name',
-      dataIndex: ['customer', 'customer_name'],
-      key: 'customer_name',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'order_status',
-      key: 'order_status',
-      render: (status: string) => <Tag color="blue">{status}</Tag>,
-    },
-    {
-      title: 'Service',
-      dataIndex: 'service',
-      key: 'service',
-    },
-    {
-      title: 'Payment Channel',
-      dataIndex: 'payment_channel',
-      key: 'payment_channel',
-    },
-    {
-      title: 'Created At',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      render: (date: string) => moment(date).format('YYYY-MM-DD HH:mm:ss'),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: Order) => (
-        <Space>
-          {record.order_status.toLowerCase() !== 'completed' && (
-            <Popconfirm
-              title="Complete this order?"
-              description="Are you sure you want to mark this order as completed?"
-              onConfirm={() => handleCompleteOrder(record.id)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button type="primary" size="small" icon={<CheckCircleOutlined />}>
-                Complete
-              </Button>
-            </Popconfirm>
-          )}
-          {record.order_status.toLowerCase() === 'completed' && (
-            <Tag color="success" icon={<CheckCircleOutlined />}>Completed</Tag>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
-
   const statusCounts = getStatusCounts();
+  const completedCount = Object.keys(statusCounts).filter(s => s.toLowerCase().includes('completed') || s.toLowerCase().includes('done')).reduce((sum, key) => sum + statusCounts[key], 0);
+  const pendingCount = Object.keys(statusCounts).filter(s => s.toLowerCase().includes('pending') || s.toLowerCase().includes('waiting')).reduce((sum, key) => sum + statusCounts[key], 0);
 
   return (
-    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="p-4 md:p-6 bg-coffee-cream min-h-screen">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div style={{ marginBottom: '24px' }}>
-          <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <CalendarOutlined style={{ color: '#1890ff' }} />
-            คำสั่งซื้อวันนี้
-          </Title>
-          <Text type="secondary" style={{ fontSize: '16px' }}>
-            {moment().format('D/M/YY')}
-          </Text>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-coffee-gradient flex items-center justify-center shadow-coffee-md">
+              <CalendarOutlined className="text-2xl text-white" />
+            </div>
+            <div>
+              <Title level={2} className="!mb-0 !text-coffee-espresso">
+                คำสั่งซื้อวันนี้
+              </Title>
+              <Text className="text-brand-text-secondary">
+                {moment().format('dddd, D MMMM YYYY')}
+              </Text>
+            </div>
+          </div>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={fetchTodaysOrders}
+            loading={loading}
+            className="!rounded-xl !h-11"
+          >
+            รีเฟรช
+          </Button>
         </div>
 
         <Spin spinning={loading}>
           {/* Statistics Cards */}
-          <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+          <Row gutter={[16, 16]} className="mb-6">
             <Col xs={24} sm={12} lg={6}>
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}
-              >
+              <div className="stat-card stat-card-purple">
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>ยอดคำสั่งซื้อ</span>}
+                  title={<span className="text-white/80 text-sm">ยอดคำสั่งซื้อทั้งหมด</span>}
                   value={orders.length}
                   prefix={<ShoppingOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
                 />
-              </Card>
+              </div>
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-                }}
-              >
+              <div className="stat-card stat-card-pink">
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รายได้รวม</span>}
+                  title={<span className="text-white/80 text-sm">รายได้รวม</span>}
                   value={totalRevenue}
                   prefix={<DollarOutlined />}
-                  suffix="บาท"
-                  precision={2}
+                  suffix="฿"
+                  precision={0}
                   valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
                 />
-              </Card>
+              </div>
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-                }}
-              >
+              <div className="stat-card stat-card-success">
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รายการที่สำเร็จ</span>}
-                  value={Object.keys(statusCounts).filter(s => s.toLowerCase().includes('completed') || s.toLowerCase().includes('done')).reduce((sum, key) => sum + statusCounts[key], 0)}
+                  title={<span className="text-white/80 text-sm">สำเร็จแล้ว</span>}
+                  value={completedCount}
                   prefix={<CheckCircleOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
                 />
-              </Card>
+              </div>
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
-                }}
-              >
+              <div className="stat-card stat-card-warning">
                 <Statistic
-                  title={<span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>รอดำเนินการ</span>}
-                  value={Object.keys(statusCounts).filter(s => s.toLowerCase().includes('pending') || s.toLowerCase().includes('waiting')).reduce((sum, key) => sum + statusCounts[key], 0)}
+                  title={<span className="text-white/80 text-sm">รอดำเนินการ</span>}
+                  value={pendingCount}
                   prefix={<ClockCircleOutlined />}
                   valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
                 />
-              </Card>
+              </div>
             </Col>
           </Row>
 
           {/* Orders List */}
           <Card
-            bordered={false}
-            style={{
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
-            }}
+            className="!rounded-2xl !shadow-coffee-md"
+            styles={{ body: { padding: '24px' } }}
           >
-            <Title level={4} style={{ marginBottom: '20px' }}>
-              <ShoppingOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-              รายละเอียดคำสั่งซื้อ
-            </Title>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                <ShoppingOutlined className="text-lg text-white" />
+              </div>
+              <Title level={4} className="!mb-0 !text-coffee-espresso">
+                รายละเอียดคำสั่งซื้อ
+              </Title>
+            </div>
 
             {orders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
-                <ShoppingOutlined style={{ fontSize: '64px', marginBottom: '16px' }} />
-                <div style={{ fontSize: '16px' }}>ไม่มีรายการคำสั่งซื้อวันนี้</div>
-              </div>
+              <Empty
+                description="ไม่มีรายการคำสั่งซื้อวันนี้"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                className="py-16"
+              />
             ) : (
               <Collapse
                 accordion
                 bordered={false}
-                style={{ background: 'transparent' }}
+                className="!bg-transparent"
                 onChange={(key) => {
                   if (key) {
-                    const orderId = key as string;
-                    fetchOrderListForOrder(orderId);
+                    const orderId = Array.isArray(key) ? key[0] : key;
+                    if (orderId) fetchOrderListForOrder(orderId);
                   }
                 }}
               >
                 {orders.map((order) => (
-                  <Panel
+                  <Collapse.Panel
                     key={order.id}
                     header={
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                        <Space size="middle">
-                          <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px', fontWeight: 'bold' }}>
-                            {order.order_number}
+                      <div className="flex items-center justify-between flex-wrap gap-3 py-1">
+                        <Space size="middle" wrap>
+                          <Tag
+                            color="blue"
+                            className="!text-sm !px-3 !py-1 !font-bold !rounded-lg"
+                          >
+                            #{order.order_number}
                           </Tag>
                           <Space size="small">
-                            <UserOutlined style={{ color: '#666' }} />
-                            <Text strong>{order.customer.customer_name}</Text>
+                            <UserOutlined className="text-coffee-light-roast" />
+                            <Text strong className="text-coffee-espresso">{order.customer.customer_name}</Text>
                           </Space>
                         </Space>
-                        <Space size="small">
-                          <Tag color={getStatusColor(order.order_status)} style={{ fontSize: '13px', padding: '2px 10px' }}>
+                        <Space size="small" wrap>
+                          <Tag
+                            color={getStatusColor(order.order_status)}
+                            className="!rounded-lg !px-3"
+                          >
                             {order.order_status}
                           </Tag>
                           {order.order_status.toLowerCase() !== 'completed' && (
                             <Popconfirm
-                              title="Complete this order?"
-                              description="Are you sure you want to mark this order as completed?"
+                              title="ยืนยันการอัปเดตสถานะ?"
+                              description="ต้องการเปลี่ยนสถานะเป็นเสร็จสิ้นหรือไม่?"
                               onConfirm={(e) => {
                                 e?.stopPropagation();
                                 handleCompleteOrder(order.id);
                               }}
-                              okText="Yes"
-                              cancelText="No"
+                              okText="ใช่"
+                              cancelText="ไม่"
+                              okButtonProps={{ style: { background: '#2E7D32' } }}
                             >
                               <Button
                                 type="primary"
                                 size="small"
                                 icon={<CheckCircleOutlined />}
                                 onClick={(e) => e.stopPropagation()}
+                                className="!rounded-lg"
+                                style={{ background: '#2E7D32' }}
                               >
-                                Complete
+                                เสร็จสิ้น
                               </Button>
                             </Popconfirm>
                           )}
-                          <Text type="secondary" style={{ fontSize: '13px' }}>
-                            {moment(order.created_at).format('HH:mm')}
+                          <Text type="secondary" className="text-sm">
+                            {moment(order.created_at).format('HH:mm น.')}
                           </Text>
                         </Space>
                       </div>
                     }
-                    style={{
-                      marginBottom: '12px',
-                      background: '#fafafa',
-                      borderRadius: '8px',
-                      border: '1px solid #f0f0f0'
-                    }}
+                    className="!mb-3 !bg-coffee-latte !rounded-xl !border !border-brand-border-light overflow-hidden"
                   >
-                    <div style={{ padding: '16px 0' }}>
+                    <div className="py-2">
                       {/* Order Info */}
-                      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
+                      <Row gutter={[16, 16]} className="mb-5">
                         <Col xs={24} sm={8}>
-                          <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
-                            <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>รับบริการ</Text>
-                              <Text strong style={{ fontSize: '16px' }}>
-                                <CoffeeOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-                                {order.service}
-                              </Text>
-                            </Space>
-                          </Card>
+                          <div className="bg-white rounded-xl p-4 border border-brand-border-light">
+                            <Text type="secondary" className="text-xs block mb-1">รับบริการ</Text>
+                            <div className="flex items-center gap-2">
+                              <CoffeeOutlined className="text-coffee-medium-roast" />
+                              <Text strong className="text-coffee-espresso">{order.service}</Text>
+                            </div>
+                          </div>
                         </Col>
                         <Col xs={24} sm={8}>
-                          <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
-                            <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>วิธีการชำระเงิน</Text>
-                              <Text strong style={{ fontSize: '16px' }}>
-                                <span style={{ marginRight: '8px' }}>{getPaymentIcon(order.payment_channel)}</span>
-                                {order.payment_channel}
-                              </Text>
-                            </Space>
-                          </Card>
+                          <div className="bg-white rounded-xl p-4 border border-brand-border-light">
+                            <Text type="secondary" className="text-xs block mb-1">วิธีการชำระเงิน</Text>
+                            <div className="flex items-center gap-2">
+                              <span>{getPaymentIcon(order.payment_channel).icon}</span>
+                              <Text strong className="text-coffee-espresso">{getPaymentIcon(order.payment_channel).label}</Text>
+                            </div>
+                          </div>
                         </Col>
                         <Col xs={24} sm={8}>
-                          <Card size="small" style={{ background: '#fff', borderRadius: '8px' }}>
-                            <Space direction="vertical" size={4}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>เวลาคำสั่งซื้อ</Text>
-                              <Text strong style={{ fontSize: '16px' }}>
-                                <ClockCircleOutlined style={{ marginRight: '8px', color: '#52c41a' }} />
+                          <div className="bg-white rounded-xl p-4 border border-brand-border-light">
+                            <Text type="secondary" className="text-xs block mb-1">เวลาคำสั่งซื้อ</Text>
+                            <div className="flex items-center gap-2">
+                              <ClockCircleOutlined className="text-green-600" />
+                              <Text strong className="text-coffee-espresso">
                                 {moment(order.created_at).format('HH:mm:ss')}
                               </Text>
-                            </Space>
-                          </Card>
+                            </div>
+                          </div>
                         </Col>
                       </Row>
 
-                      <Divider style={{ margin: '16px 0' }}>รายการสินค้า</Divider>
+                      <Divider className="!my-4">
+                        <span className="text-brand-text-secondary text-sm">รายการสินค้า</span>
+                      </Divider>
 
                       {/* Order Items */}
                       {!orderListItems[order.id] ? (
-                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <div className="text-center py-8">
                           <Spin />
                         </div>
                       ) : (
-                        <div style={{ background: '#fff', borderRadius: '8px', padding: '16px' }}>
+                        <div className="bg-white rounded-xl p-4 border border-brand-border-light">
                           {orderListItems[order.id].map((item, index) => (
                             <div
                               key={item.id}
-                              style={{
-                                padding: '12px',
-                                borderBottom: index < orderListItems[order.id].length - 1 ? '1px solid #f0f0f0' : 'none',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: '8px'
-                              }}
+                              className={`py-3 flex justify-between items-center ${
+                                index < orderListItems[order.id].length - 1 ? 'border-b border-brand-border-light' : ''
+                              }`}
                             >
-                              <Space size="middle" style={{ flex: 1, minWidth: '200px' }}>
-                                <Tag color="cyan" style={{ fontSize: '18px', padding: '4px 8px', minWidth: '40px', textAlign: 'center' }}>
+                              <Space size="middle" className="flex-1 min-w-0">
+                                <Tag color="cyan" className="!text-base !px-3 !py-1 !rounded-lg !font-bold">
                                   {item.quantity}x
                                 </Tag>
-                                <div>
-                                  <div style={{ fontSize: '16px', fontWeight: 500 }}>
+                                <div className="min-w-0">
+                                  <Text strong className="text-coffee-espresso block truncate">
                                     {item.menu?.name || 'Unknown Item'}
-                                  </div>
+                                  </Text>
                                   {item.remark && (
-                                    <Text type="secondary" style={{ fontSize: '13px' }}>
+                                    <Text type="secondary" className="text-xs">
                                       Note: {item.remark}
                                     </Text>
                                   )}
                                 </div>
                               </Space>
-                              <Text strong style={{ fontSize: '16px', color: '#1890ff' }}>
-                                ฿{(item.price * item.quantity).toFixed(2)}
+                              <Text strong className="text-coffee-medium-roast text-base">
+                                ฿{(item.price * item.quantity).toFixed(0)}
                               </Text>
                             </div>
                           ))}
-                          <div style={{
-                            marginTop: '16px',
-                            paddingTop: '16px',
-                            borderTop: '2px solid #f0f0f0',
-                            textAlign: 'right'
-                          }}>
-                            <Text strong style={{ fontSize: '18px', color: '#000' }}>
-                              ยอดรวม : ฿{orderListItems[order.id].reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+                          <div className="mt-4 pt-4 border-t-2 border-brand-border flex justify-between items-center">
+                            <Text strong className="text-coffee-espresso">ยอดรวม</Text>
+                            <Text strong className="text-xl text-coffee-medium-roast">
+                              ฿{orderListItems[order.id].reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(0)}
                             </Text>
                           </div>
                         </div>
                       )}
                     </div>
-                  </Panel>
+                  </Collapse.Panel>
                 ))}
               </Collapse>
             )}

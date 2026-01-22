@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Typography, Row, Col, Card, Statistic, Table, Segmented, Spin, Empty } from 'antd';
+import { Typography, Row, Col, Card, Statistic, Table, Segmented, Empty } from 'antd';
 import {
   ArrowUpOutlined,
   CoffeeOutlined,
@@ -27,7 +27,7 @@ import {
 } from 'recharts';
 import moment from 'moment';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface SalesData {
   menu: string;
@@ -54,30 +54,17 @@ interface Menu {
   status: string;
 }
 
-interface Order {
-  id: string;
-  order_number: string;
-  order_status: string;
-  created_at: string;
-  customer: {
-    customer_name: string;
-  };
-}
-
-const COLORS = ['#66BB6A', '#29B6F6', '#FFA726', '#8D6E63', '#AB47BC', '#EC407A'];
+const COLORS = ['#6F4E37', '#8B7355', '#D4B896', '#C68E17', '#10B981', '#0EA5E9'];
 
 const HomePage: React.FC = () => {
   const { user } = useContext(AuthContext)!;
   const [period, setPeriod] = useState<string>('monthly');
   const [loading, setLoading] = useState(true);
 
-  // State for data
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
 
-  // State for statistics
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [newCustomers, setNewCustomers] = useState(0);
@@ -85,13 +72,11 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch all data in parallel
       const [salesRes, customersRes, menusRes, ordersRes] = await Promise.all([
         getSalesAnalytics(period),
         getCustomers(),
@@ -99,45 +84,28 @@ const HomePage: React.FC = () => {
         getOrders({ date: moment().format('YYYY-MM-DD') })
       ]);
 
-      console.log('Sales Response:', salesRes);
-      console.log('Customers Response:', customersRes);
-      console.log('Menus Response:', menusRes);
-      console.log('Orders Response:', ordersRes);
-
-      // Set sales data - API uses responseObject
       const salesDataArray = salesRes?.responseObject || [];
       setSalesData(salesDataArray);
-      console.log('Sales Data Array:', salesDataArray);
 
-      // Set customers - API uses responseObject
       const customersArray = customersRes?.responseObject || [];
       setCustomers(customersArray);
-      console.log('Customers Array:', customersArray);
 
-      // Set menus - API uses responseObject
       const menusArray = menusRes?.responseObject || [];
       setMenus(menusArray);
-      console.log('Menus Array:', menusArray);
 
-      // Set orders - API uses responseObject.data for orders
       const ordersArray = ordersRes?.responseObject?.data || ordersRes?.responseObject || [];
-      setOrders(ordersArray);
-      console.log('Orders Array:', ordersArray);
 
-      // Calculate statistics
       const revenue = salesDataArray.reduce((sum: number, item: SalesData) => sum + item.revenue, 0);
       setTotalRevenue(revenue);
 
       setTotalOrders(ordersArray.length);
 
-      // Calculate new customers (customers created in the last 7 days)
       const sevenDaysAgo = moment().subtract(7, 'days');
       const recentCustomers = customersArray.filter((c: Customer) =>
         moment(c.created_at).isAfter(sevenDaysAgo)
       );
       setNewCustomers(recentCustomers.length);
 
-      // Calculate growth (mock calculation - you may want to implement actual growth calculation)
       setGrowth(revenue > 0 ? 9.3 : 0);
 
     } catch (error) {
@@ -147,7 +115,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // Prepare data for charts
   const topSellingProducts = salesData
     .sort((a, b) => b.sales - a.sales)
     .slice(0, 10);
@@ -156,67 +123,86 @@ const HomePage: React.FC = () => {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
-  // Customer table columns
   const customerColumns = [
     {
-      title: 'ชื่อลูกค้า',
-      dataIndex: 'customer_name',
-      key: 'customer_name',
-      width: 200,
-    },
-    {
-      title: 'เบอร์โทร',
-      dataIndex: 'customer_phone',
-      key: 'customer_phone',
-      width: 150,
+      title: 'ลูกค้า',
+      key: 'customer',
+      render: (_: any, record: Customer) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-coffee-gradient flex items-center justify-center">
+            <UserOutlined className="text-white text-sm" />
+          </div>
+          <div>
+            <Text strong className="text-coffee-espresso block">{record.customer_name}</Text>
+            <Text type="secondary" className="text-xs">{record.customer_phone}</Text>
+          </div>
+        </div>
+      ),
     },
     {
       title: 'ยอดซื้อสะสม',
       dataIndex: 'total_purchase',
       key: 'total_purchase',
-      width: 150,
-      render: (value: number) => `${value?.toLocaleString() || 0} บาท`,
+      width: 120,
+      render: (value: number) => (
+        <Text strong className="text-coffee-medium-roast">
+          ฿{value?.toLocaleString() || 0}
+        </Text>
+      ),
     },
     {
       title: 'วันที่ลงทะเบียน',
       dataIndex: 'created_at',
       key: 'created_at',
-      width: 150,
-      render: (date: string) => moment(date).format('DD/MM/YYYY'),
+      width: 120,
+      render: (date: string) => (
+        <Text type="secondary" className="text-sm">
+          {moment(date).format('DD/MM/YYYY')}
+        </Text>
+      ),
     },
   ];
 
-  // Menu table columns
   const menuColumns = [
     {
-      title: 'ชื่อสินค้า',
-      dataIndex: 'name',
-      key: 'name',
-      width: 200,
-    },
-    {
-      title: 'หมวดหมู่',
-      dataIndex: ['category', 'name'],
-      key: 'category',
-      width: 150,
+      title: 'สินค้า',
+      key: 'product',
+      render: (_: any, record: Menu) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-coffee-latte flex items-center justify-center">
+            <CoffeeOutlined className="text-coffee-medium-roast text-sm" />
+          </div>
+          <div>
+            <Text strong className="text-coffee-espresso block">{record.name}</Text>
+            <Text type="secondary" className="text-xs">{record.category?.name || '-'}</Text>
+          </div>
+        </div>
+      ),
     },
     {
       title: 'ราคา',
       dataIndex: 'price',
       key: 'price',
-      width: 120,
-      render: (value: number) => `${value?.toLocaleString() || 0} บาท`,
+      width: 100,
+      render: (value: number) => (
+        <Text strong className="text-coffee-medium-roast">
+          ฿{value?.toLocaleString() || 0}
+        </Text>
+      ),
     },
     {
       title: 'สถานะ',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 100,
       render: (status: string) => (
-        <span style={{
-          color: status === 'available' ? '#66BB6A' : '#F44336',
-          fontWeight: 500
-        }}>
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+            status === 'available'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
+          }`}
+        >
           {status === 'available' ? 'พร้อมขาย' : 'หมด'}
         </span>
       ),
@@ -225,24 +211,27 @@ const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '400px'
-      }}>
-        <Spin size="large" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="coffee-spinner mx-auto mb-4" />
+          <Text className="text-brand-text-secondary">กำลังโหลดข้อมูล...</Text>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '0 0 24px 0' }}>
+    <div className="p-4 md:p-6 bg-coffee-cream min-h-screen">
       {/* Header */}
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2} style={{ margin: 0 }}>
-          ยินดีต้อนรับ, {user?.username || 'User'}!
-        </Title>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <div>
+          <Title level={2} className="!mb-1 !text-coffee-espresso">
+            ยินดีต้อนรับ, {user?.username || 'User'}!
+          </Title>
+          <Text className="text-brand-text-secondary">
+            ภาพรวมการดำเนินงานของร้านกาแฟ
+          </Text>
+        </div>
         <Segmented
           value={period}
           onChange={(value) => setPeriod(value as string)}
@@ -251,91 +240,101 @@ const HomePage: React.FC = () => {
             { label: 'รายปี', value: 'yearly' },
           ]}
           size="large"
+          className="!rounded-xl"
         />
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} className="mb-6">
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <div className="stat-card stat-card-success">
             <Statistic
-              title="รายได้รวม"
+              title={<span className="text-white/80 text-sm">รายได้รวม</span>}
               value={totalRevenue}
-              precision={2}
-              valueStyle={{ color: '#66BB6A', fontSize: 28 }}
+              precision={0}
               prefix={<DollarCircleOutlined />}
-              suffix="บาท"
+              suffix="฿"
+              valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <div className="stat-card stat-card-coffee">
             <Statistic
-              title="ออเดอร์วันนี้"
+              title={<span className="text-white/80 text-sm">ออเดอร์วันนี้</span>}
               value={totalOrders}
-              valueStyle={{ color: '#8D6E63', fontSize: 28 }}
               prefix={<CoffeeOutlined />}
+              valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <div className="stat-card stat-card-info">
             <Statistic
-              title="ลูกค้าใหม่"
+              title={<span className="text-white/80 text-sm">ลูกค้าใหม่ (7 วัน)</span>}
               value={newCustomers}
-              valueStyle={{ color: '#29B6F6', fontSize: 28 }}
               prefix={<TeamOutlined />}
               suffix="คน"
+              valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <div className="stat-card stat-card-purple">
             <Statistic
-              title="การเติบโต"
+              title={<span className="text-white/80 text-sm">การเติบโต</span>}
               value={growth}
               precision={1}
-              valueStyle={{ color: '#66BB6A', fontSize: 28 }}
               prefix={<ArrowUpOutlined />}
               suffix="%"
+              valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
             />
-          </Card>
+          </div>
         </Col>
       </Row>
 
       {/* Charts Section */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} className="mb-6">
         {/* Top Selling Products */}
         <Col xs={24} lg={12}>
           <Card
-            title={
-              <span>
-                <ShoppingOutlined style={{ marginRight: 8, color: '#66BB6A' }} />
-                สินค้าขายดี Top 10
-              </span>
-            }
-            style={{ height: '100%' }}
+            className="!rounded-2xl !shadow-coffee-md h-full"
+            styles={{ body: { padding: '20px' } }}
           >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
+                <ShoppingOutlined className="text-lg text-white" />
+              </div>
+              <Title level={5} className="!mb-0 !text-coffee-espresso">
+                สินค้าขายดี Top 10
+              </Title>
+            </div>
             {topSellingProducts.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={topSellingProducts}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E2D9" />
                   <XAxis
                     dataKey="menu"
                     angle={-45}
                     textAnchor="end"
                     height={100}
                     interval={0}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fill: '#5C5650' }}
                   />
-                  <YAxis />
-                  <Tooltip />
+                  <YAxis tick={{ fontSize: 12, fill: '#5C5650' }} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: 'none',
+                      boxShadow: '0 4px 16px rgba(111, 78, 55, 0.12)',
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="sales" fill="#66BB6A" name="จำนวนที่ขาย" />
+                  <Bar dataKey="sales" fill="#6F4E37" name="จำนวนที่ขาย" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <Empty description="ไม่มีข้อมูลการขาย" />
+              <Empty description="ไม่มีข้อมูลการขาย" className="py-16" />
             )}
           </Card>
         </Col>
@@ -343,86 +342,115 @@ const HomePage: React.FC = () => {
         {/* Revenue by Product */}
         <Col xs={24} lg={12}>
           <Card
-            title={
-              <span>
-                <DollarCircleOutlined style={{ marginRight: 8, color: '#29B6F6' }} />
-                รายได้ตามสินค้า Top 5
-              </span>
-            }
-            style={{ height: '100%' }}
+            className="!rounded-2xl !shadow-coffee-md h-full"
+            styles={{ body: { padding: '20px' } }}
           >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                <DollarCircleOutlined className="text-lg text-white" />
+              </div>
+              <Title level={5} className="!mb-0 !text-coffee-espresso">
+                รายได้ตามสินค้า Top 5
+              </Title>
+            </div>
             {revenueByProduct.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
-                    data={revenueByProduct}
+                    data={revenueByProduct as { menu: string; revenue: number }[]}
                     dataKey="revenue"
                     nameKey="menu"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={(entry) => `${entry.menu}: ${entry.revenue.toLocaleString()} บาท`}
+                    outerRadius={90}
+                    label={({ name, value }) => `${name || ''}: ฿${(value as number)?.toLocaleString()}`}
+                    labelLine={{ stroke: '#8B7355' }}
                   >
-                    {revenueByProduct.map((entry, index) => (
+                    {revenueByProduct.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `${value.toLocaleString()} บาท`} />
+                  <Tooltip
+                    formatter={(value: number) => `฿${value.toLocaleString()}`}
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: 'none',
+                      boxShadow: '0 4px 16px rgba(111, 78, 55, 0.12)',
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <Empty description="ไม่มีข้อมูลรายได้" />
+              <Empty description="ไม่มีข้อมูลรายได้" className="py-16" />
             )}
           </Card>
         </Col>
       </Row>
 
-      {/* Sales Trend (Mock Data for now) */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+      {/* Sales Trend */}
+      <Row gutter={[16, 16]} className="mb-6">
         <Col span={24}>
           <Card
-            title={
-              <span>
-                <ArrowUpOutlined style={{ marginRight: 8, color: '#FFA726' }} />
-                แนวโน้มยอดขาย
-              </span>
-            }
+            className="!rounded-2xl !shadow-coffee-md"
+            styles={{ body: { padding: '20px' } }}
           >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center">
+                <ArrowUpOutlined className="text-lg text-white" />
+              </div>
+              <Title level={5} className="!mb-0 !text-coffee-espresso">
+                แนวโน้มยอดขาย
+              </Title>
+            </div>
             {salesData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={280}>
                 <LineChart
-                  data={salesData.slice(0, 12).map((item, index) => ({
+                  data={salesData.slice(0, 12).map((item) => ({
                     name: item.menu.substring(0, 10),
                     revenue: item.revenue,
                     orders: item.sales
                   }))}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8E2D9" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    tick={{ fontSize: 11, fill: '#5C5650' }}
+                  />
+                  <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#5C5650' }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#5C5650' }} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: 'none',
+                      boxShadow: '0 4px 16px rgba(111, 78, 55, 0.12)',
+                    }}
+                  />
                   <Legend />
                   <Line
                     yAxisId="left"
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#66BB6A"
+                    stroke="#6F4E37"
                     name="รายได้ (บาท)"
                     strokeWidth={2}
+                    dot={{ fill: '#6F4E37', r: 4 }}
                   />
                   <Line
                     yAxisId="right"
                     type="monotone"
                     dataKey="orders"
-                    stroke="#29B6F6"
+                    stroke="#0EA5E9"
                     name="จำนวนออเดอร์"
                     strokeWidth={2}
+                    dot={{ fill: '#0EA5E9', r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <Empty description="ไม่มีข้อมูลแนวโน้ม" />
+              <Empty description="ไม่มีข้อมูลแนวโน้ม" className="py-16" />
             )}
           </Card>
         </Col>
@@ -433,13 +461,17 @@ const HomePage: React.FC = () => {
         {/* Customers Table */}
         <Col xs={24} xl={12}>
           <Card
-            title={
-              <span>
-                <UserOutlined style={{ marginRight: 8, color: '#AB47BC' }} />
-                ข้อมูลลูกค้า ({customers.length} คน)
-              </span>
-            }
+            className="!rounded-2xl !shadow-coffee-md"
+            styles={{ body: { padding: '20px' } }}
           >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center">
+                <UserOutlined className="text-lg text-white" />
+              </div>
+              <Title level={5} className="!mb-0 !text-coffee-espresso">
+                ข้อมูลลูกค้า ({customers.length} คน)
+              </Title>
+            </div>
             <Table
               columns={customerColumns}
               dataSource={customers}
@@ -449,7 +481,8 @@ const HomePage: React.FC = () => {
                 showSizeChanger: false,
                 showTotal: (total) => `ทั้งหมด ${total} รายการ`
               }}
-              scroll={{ x: 600 }}
+              size="small"
+              className="coffee-table"
             />
           </Card>
         </Col>
@@ -457,13 +490,17 @@ const HomePage: React.FC = () => {
         {/* Products Table */}
         <Col xs={24} xl={12}>
           <Card
-            title={
-              <span>
-                <CoffeeOutlined style={{ marginRight: 8, color: '#EC407A' }} />
-                รายการสินค้า ({menus.length} รายการ)
-              </span>
-            }
+            className="!rounded-2xl !shadow-coffee-md"
+            styles={{ body: { padding: '20px' } }}
           >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-pink-500 flex items-center justify-center">
+                <CoffeeOutlined className="text-lg text-white" />
+              </div>
+              <Title level={5} className="!mb-0 !text-coffee-espresso">
+                รายการสินค้า ({menus.length} รายการ)
+              </Title>
+            </div>
             <Table
               columns={menuColumns}
               dataSource={menus}
@@ -473,7 +510,8 @@ const HomePage: React.FC = () => {
                 showSizeChanger: false,
                 showTotal: (total) => `ทั้งหมด ${total} รายการ`
               }}
-              scroll={{ x: 600 }}
+              size="small"
+              className="coffee-table"
             />
           </Card>
         </Col>

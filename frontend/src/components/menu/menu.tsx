@@ -10,71 +10,64 @@ import {
   CoffeeOutlined,
   LogoutOutlined,
   MessageOutlined,
-  PieChartOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, Avatar, Typography, Tooltip, Badge } from 'antd';
+import { Layout, Menu, Avatar, Typography, Tooltip } from 'antd';
 import { AuthContext } from '../../auth/auth';
 
 const { Sider } = Layout;
 const { Text, Title } = Typography;
 
-// กำหนด type สำหรับ MenuItem
-type MenuItem = Required<MenuProps>['items'][number];
-
-/**
- * ฟังก์ชันสร้าง MenuItem object
- * @param label - ข้อความหรือ component ที่จะแสดงในเมนู
- * @param key - key ที่ใช้ระบุเมนูแต่ละตัว
- * @param icon - ไอคอนที่แสดงข้างหน้าเมนู
- * @param children - เมนูย่อย (ถ้ามี)
- */
-function getItem(
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
-  children?: MenuItem[],
-): MenuItem {
-  return {
-    key,
-    icon,
-    children,
-    label,
-  } as MenuItem;
+// Custom type for menu items with path
+interface MenuItemWithPath {
+  key: string;
+  icon: React.ReactNode;
+  label: React.ReactNode;
+  path: string;
 }
 
 // รายการเมนูทั้งหมดในระบบ พร้อม path สำหรับ routing
-const allMenuItems: (MenuItem & { path: string })[] = [
+const allMenuItems: MenuItemWithPath[] = [
   {
-    ...getItem(<Link to="/take-order">รับออเดอร์</Link>, 'take-order', <CoffeeOutlined />),
+    key: 'take-order',
+    icon: <CoffeeOutlined />,
+    label: <Link to="/take-order">รับออเดอร์</Link>,
     path: '/take-order'
   },
   {
-    ...getItem(<Link to="/todays-orders">คำสั่งซื้อวันนี้</Link>, 'todays-orders', <DesktopOutlined />),
+    key: 'todays-orders',
+    icon: <DesktopOutlined />,
+    label: <Link to="/todays-orders">คำสั่งซื้อวันนี้</Link>,
     path: '/todays-orders'
   },
   {
-    ...getItem(<Link to="/products">รายสินค้า</Link>, 'products', <ShopOutlined />),
+    key: 'products',
+    icon: <ShopOutlined />,
+    label: <Link to="/products">รายสินค้า</Link>,
     path: '/products'
   },
   {
-    ...getItem(<Link to="/sales-history">ประวัติการขาย</Link>, 'sales-history', <FileOutlined />),
+    key: 'sales-history',
+    icon: <FileOutlined />,
+    label: <Link to="/sales-history">ประวัติการขาย</Link>,
     path: '/sales-history'
   },
   {
-    ...getItem(<Link to="/customers">รายชื่อลูกค้า</Link>, 'customers', <TeamOutlined />),
+    key: 'customers',
+    icon: <TeamOutlined />,
+    label: <Link to="/customers">รายชื่อลูกค้า</Link>,
     path: '/customers'
   },
   {
-    ...getItem(<Link to="/employees">รายชื่อพนักงาน</Link>, 'employees', <UserOutlined />),
+    key: 'employees',
+    icon: <UserOutlined />,
+    label: <Link to="/employees">รายชื่อพนักงาน</Link>,
     path: '/employees'
   },
-  // {
-  //   ...getItem(<Link to="/dashboard">แดชบอร์ด</Link>, 'dashboard', <PieChartOutlined />),
-  //   path: '/dashboard'
-  // },
   {
-    ...getItem(<Link to="/ai-chat">คุยกับ AI</Link>, 'ai-chat', <MessageOutlined />),
+    key: 'ai-chat',
+    icon: <MessageOutlined />,
+    label: <Link to="/ai-chat">คุยกับ AI</Link>,
     path: '/ai-chat'
   },
 ];
@@ -91,12 +84,10 @@ const rolePermissions: Record<string, string[]> = {
   staff: ['ai-chat', 'take-order', 'todays-orders', 'products'],
 };
 
-type UserRole = keyof typeof rolePermissions;
-
 interface MenuComponentProps {
   user: {
-    name: string;
-    role: UserRole;
+    username: string;
+    role: string;
   };
 }
 
@@ -210,7 +201,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ user }) => {
       <Menu
         selectedKeys={[current]}
         mode="inline"
-        items={filteredMenuItems}
+        items={filteredMenuItems as unknown as MenuProps['items']}
         style={{
           flex: 1,
           overflowY: 'auto',
@@ -276,7 +267,7 @@ const MenuComponent: React.FC<MenuComponentProps> = ({ user }) => {
                     fontSize: '14px',
                   }}
                 >
-                  {user.name}
+                  {user.username}
                 </Text>
                 <Text
                   style={{

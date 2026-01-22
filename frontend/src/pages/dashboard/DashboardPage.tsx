@@ -20,7 +20,7 @@ interface SalesData {
 
 const DashboardPage = () => {
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<any>(); // Use 'any' since Chart type is not imported
+  const chartInstance = useRef<any>(null); // Use 'any' since Chart type is not imported
   const [data, setData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Typography, message, Spin, Tag } from 'antd';
+import { Table, Card, Typography, message, Spin, Tag, Row, Col, Statistic, Space, Divider, Empty } from 'antd';
+import { HistoryOutlined, DollarOutlined, ShoppingOutlined, UserOutlined, CoffeeOutlined } from '@ant-design/icons';
 import { getOrders, getOrderLists } from '../../api';
 import moment from 'moment';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface Customer {
   id: string;
@@ -41,7 +42,6 @@ interface OrderListItem {
 const SalesHistoryPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [orderListItems, setOrderListItems] = useState<{ [orderId: string]: OrderListItem[] }>({});
 
   const fetchAllOrders = async () => {
@@ -52,10 +52,10 @@ const SalesHistoryPage: React.FC = () => {
       if (ordersResponse.success && ordersResponse.responseObject?.data) {
         setOrders(ordersResponse.responseObject.data);
       } else {
-        message.error(ordersResponse.message || 'Failed to fetch orders.');
+        message.error(ordersResponse.message || 'ไม่สามารถโหลดข้อมูลได้');
       }
     } catch (error: any) {
-      message.error('Error fetching orders: ' + error.message);
+      message.error('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -66,131 +66,292 @@ const SalesHistoryPage: React.FC = () => {
   }, []);
 
   const fetchOrderListForOrder = async (orderId: string) => {
-    if (orderListItems[orderId]) return; // Already fetched
+    if (orderListItems[orderId]) return;
 
     try {
       const orderListResponse = await getOrderLists({ orderId: orderId });
       if (orderListResponse.success && orderListResponse.responseObject?.data) {
         setOrderListItems(prev => ({ ...prev, [orderId]: orderListResponse.responseObject.data }));
       } else {
-        message.error(orderListResponse.message || `Failed to fetch order list for order ${orderId}.`);
+        message.error(orderListResponse.message || `ไม่สามารถโหลดรายการสินค้าได้`);
       }
     } catch (error: any) {
-      message.error(`Error fetching order list for order ${orderId}: ` + error.message);
+      message.error(`เกิดข้อผิดพลาด: ` + error.message);
     }
   };
 
-  const handleExpand = (expanded: boolean, record: Order) => {
-    if (expanded) {
-      setExpandedRowKeys(prev => [...prev, record.id]);
-      fetchOrderListForOrder(record.id);
-    } else {
-      setExpandedRowKeys(prev => prev.filter(key => key !== record.id));
-    }
-  };
   const getOrderStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return { color: 'green', text: 'สำเร็จแล้ว' };
-      case 'pending':
-        return { color: 'orange', text: 'รอดำเนินการ' };
-      case 'cancelled':
-        return { color: 'red', text: 'ยกเลิกแล้ว' };
-      case 'processing':
-        return { color: 'blue', text: 'กำลังดำเนินการ' };
-      default:
-        return { color: 'default', text: status };
+    const statusLower = status?.toLowerCase() || '';
+    if (statusLower.includes('completed') || statusLower.includes('done')) {
+      return { color: 'success', text: 'สำเร็จแล้ว' };
     }
+    if (statusLower.includes('pending') || statusLower.includes('waiting')) {
+      return { color: 'warning', text: 'รอดำเนินการ' };
+    }
+    if (statusLower.includes('cancelled') || statusLower.includes('failed')) {
+      return { color: 'error', text: 'ยกเลิกแล้ว' };
+    }
+    if (statusLower.includes('processing') || statusLower.includes('preparing')) {
+      return { color: 'processing', text: 'กำลังดำเนินการ' };
+    }
+    return { color: 'default', text: status };
   };
+
+  const getPaymentIcon = (channel: string) => {
+    const channelLower = channel?.toLowerCase() || '';
+    if (channelLower.includes('cash')) return { icon: '💵', label: 'เงินสด' };
+    if (channelLower.includes('card') || channelLower.includes('credit')) return { icon: '💳', label: 'บัตรเครดิต' };
+    if (channelLower.includes('qr') || channelLower.includes('promptpay')) return { icon: '📱', label: 'PromptPay' };
+    return { icon: '💰', label: channel };
+  };
+
+  // Calculate statistics
+  const completedOrders = orders.filter(o => o.order_status?.toLowerCase().includes('completed') || o.order_status?.toLowerCase().includes('done'));
+  const pendingOrders = orders.filter(o => o.order_status?.toLowerCase().includes('pending'));
 
   const orderColumns = [
     {
       title: 'เลขที่คำสั่งซื้อ',
       dataIndex: 'order_number',
       key: 'order_number',
+      width: 150,
+      render: (orderNumber: string) => (
+        <Tag color="blue" className="!text-sm !px-3 !py-1 !font-bold !rounded-lg">
+          #{orderNumber}
+        </Tag>
+      ),
     },
     {
-      title: 'ชื่อลูกค้า',
+      title: 'ลูกค้า',
       dataIndex: ['customer', 'customer_name'],
       key: 'customer_name',
+      render: (name: string) => (
+        <Space size="small">
+          <UserOutlined className="text-coffee-light-roast" />
+          <Text strong className="text-coffee-espresso">{name}</Text>
+        </Space>
+      ),
     },
     {
-      title: 'สถานะคำสั่งซื้อ',
+      title: 'สถานะ',
       dataIndex: 'order_status',
       key: 'order_status',
+      width: 140,
       render: (status: string) => {
         const { color, text } = getOrderStatus(status);
-        return <Tag color={color}>{text}</Tag>;
+        return <Tag color={color} className="!rounded-lg !px-3">{text}</Tag>;
       },
     },
     {
-      title: 'ประเภทการให้บริการ',
+      title: 'บริการ',
       dataIndex: 'service',
       key: 'service',
+      width: 120,
+      render: (service: string) => (
+        <Space size="small">
+          <CoffeeOutlined className="text-coffee-medium-roast" />
+          <Text type="secondary">{service}</Text>
+        </Space>
+      ),
     },
     {
-      title: 'ช่องทางการชำระเงิน',
+      title: 'ชำระเงิน',
       dataIndex: 'payment_channel',
       key: 'payment_channel',
+      width: 130,
+      render: (channel: string) => {
+        const { icon, label } = getPaymentIcon(channel);
+        return (
+          <Space size="small">
+            <span>{icon}</span>
+            <Text type="secondary">{label}</Text>
+          </Space>
+        );
+      },
     },
     {
-      title: 'วันที่สร้างคำสั่งซื้อ',
+      title: 'วันที่',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (date: string) => moment(date).format('DD-MM-YYYY HH:mm:ss'),
+      width: 180,
+      render: (date: string) => (
+        <Text type="secondary">
+          {moment(date).format('DD MMM YYYY, HH:mm')}
+        </Text>
+      ),
     },
   ];
 
   const orderListItemColumns = [
     {
-      title: 'รายการเมนู',
+      title: 'รายการ',
       dataIndex: ['menu', 'name'],
       key: 'menu_name',
+      render: (name: string) => <Text strong className="text-coffee-espresso">{name || 'Unknown'}</Text>,
     },
     {
       title: 'จำนวน',
       dataIndex: 'quantity',
       key: 'quantity',
+      width: 100,
+      render: (qty: number) => (
+        <Tag color="cyan" className="!text-base !px-3 !py-1 !rounded-lg !font-bold">{qty}x</Tag>
+      ),
     },
     {
       title: 'ราคา',
       dataIndex: 'price',
       key: 'price',
-      render: (price: number) => `${Number(price).toFixed(2)} บาท`,
+      width: 120,
+      render: (price: number) => (
+        <Text strong className="text-coffee-medium-roast">฿{Number(price).toFixed(0)}</Text>
+      ),
     },
     {
       title: 'หมายเหตุ',
       dataIndex: 'remark',
       key: 'remark',
-      render: (remark: string) => remark || '-',
+      render: (remark: string) => (
+        <Text type="secondary" className="text-sm">{remark || '-'}</Text>
+      ),
     },
   ];
 
   return (
-    <Card style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-      <Title level={3}>ประวัติการขาย</Title>
+    <div className="p-4 md:p-6 bg-coffee-cream min-h-screen">
+      {/* Header */}
+      <Card
+        className="!rounded-2xl !shadow-coffee-md !mb-6"
+        styles={{ body: { padding: '20px 24px' } }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-coffee-gradient flex items-center justify-center shadow-coffee-md">
+            <HistoryOutlined className="text-2xl text-white" />
+          </div>
+          <div>
+            <Title level={2} className="!mb-0 !text-coffee-espresso">
+              ประวัติการขาย
+            </Title>
+            <Text className="text-brand-text-secondary">
+              ดูประวัติคำสั่งซื้อทั้งหมดของร้าน
+            </Text>
+          </div>
+        </div>
+      </Card>
+
       <Spin spinning={loading}>
-        <Table
-          columns={orderColumns}
-          dataSource={orders}
-          rowKey="id"
-          expandable={{
-            expandedRowRender: (record) => (
-              <Table
-                columns={orderListItemColumns}
-                dataSource={orderListItems[record.id] || []}
-                rowKey="id"
-                pagination={false}
-                loading={!orderListItems[record.id] && expandedRowKeys.includes(record.id)}
+        {/* Statistics */}
+        <Row gutter={[16, 16]} className="mb-6">
+          <Col xs={24} sm={8}>
+            <div className="stat-card stat-card-purple">
+              <Statistic
+                title={<span className="text-white/80 text-sm">คำสั่งซื้อทั้งหมด</span>}
+                value={orders.length}
+                prefix={<ShoppingOutlined />}
+                valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
               />
-            ),
-            onExpand: handleExpand,
-            expandedRowKeys: expandedRowKeys,
-          }}
-          pagination={false}
-        />
+            </div>
+          </Col>
+          <Col xs={24} sm={8}>
+            <div className="stat-card stat-card-success">
+              <Statistic
+                title={<span className="text-white/80 text-sm">สำเร็จแล้ว</span>}
+                value={completedOrders.length}
+                prefix={<DollarOutlined />}
+                valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
+              />
+            </div>
+          </Col>
+          <Col xs={24} sm={8}>
+            <div className="stat-card stat-card-warning">
+              <Statistic
+                title={<span className="text-white/80 text-sm">รอดำเนินการ</span>}
+                value={pendingOrders.length}
+                prefix={<ShoppingOutlined />}
+                valueStyle={{ color: '#fff', fontSize: '32px', fontWeight: 'bold' }}
+              />
+            </div>
+          </Col>
+        </Row>
+
+        {/* Orders Table */}
+        <Card
+          className="!rounded-2xl !shadow-coffee-md"
+          styles={{ body: { padding: '24px' } }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+              <ShoppingOutlined className="text-lg text-white" />
+            </div>
+            <Title level={4} className="!mb-0 !text-coffee-espresso">
+              รายการคำสั่งซื้อ
+            </Title>
+          </div>
+
+          {orders.length === 0 ? (
+            <Empty
+              description="ยังไม่มีประวัติการขาย"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              className="py-16"
+            />
+          ) : (
+            <Table
+              columns={orderColumns}
+              dataSource={orders}
+              rowKey="id"
+              expandable={{
+                expandedRowRender: (record) => (
+                  <div className="p-4 bg-coffee-latte rounded-xl">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CoffeeOutlined className="text-coffee-medium-roast" />
+                      <Text strong className="text-coffee-espresso">รายการสินค้า</Text>
+                    </div>
+                    {!orderListItems[record.id] ? (
+                      <div className="text-center py-4">
+                        <Spin size="small" />
+                      </div>
+                    ) : orderListItems[record.id].length === 0 ? (
+                      <Text type="secondary">ไม่มีรายการสินค้า</Text>
+                    ) : (
+                      <>
+                        <Table
+                          columns={orderListItemColumns}
+                          dataSource={orderListItems[record.id]}
+                          rowKey="id"
+                          pagination={false}
+                          size="small"
+                          className="coffee-table"
+                        />
+                        <Divider className="!my-3" />
+                        <div className="flex justify-end">
+                          <div className="bg-white rounded-xl px-6 py-3 border border-brand-border-light">
+                            <Text type="secondary" className="mr-4">ยอดรวม:</Text>
+                            <Text strong className="text-xl text-coffee-medium-roast">
+                              ฿{orderListItems[record.id].reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(0)}
+                            </Text>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ),
+                onExpand: (expanded, record) => {
+                  if (expanded) {
+                    fetchOrderListForOrder(record.id);
+                  }
+                },
+              }}
+              pagination={{
+                pageSize: 10,
+                showTotal: (total) => `ทั้งหมด ${total} รายการ`,
+                className: 'mt-4'
+              }}
+              className="coffee-table"
+            />
+          )}
+        </Card>
       </Spin>
-    </Card>
+    </div>
   );
 };
 

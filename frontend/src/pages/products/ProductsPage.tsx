@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm, Tabs, Badge, Tag, Space, Empty } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CoffeeOutlined } from '@ant-design/icons';
-import { getMenus, getCategories, createMenu, updateMenu, deleteMenu } from '../../api';
+import { Card, Col, Row, Button, Typography, message, Spin, Modal, Form, Input, InputNumber, Select, Popconfirm, Tabs, Tag, Empty } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CoffeeOutlined, ShopOutlined } from '@ant-design/icons';
+import { getMenus, getCategories, createMenu, updateMenu } from '../../api';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -15,13 +15,13 @@ interface Category {
 interface MenuItem {
   id: string;
   name: string;
-  description?: string; // Assuming description might be part of the menu item, though not in current model
-  image_url?: string; // Assuming image_url might be part of the menu item
+  description?: string;
+  image_url?: string;
   price: number;
   stock?: number;
   category_id: string;
   type: string;
-  status?: string; // Assuming status might be part of the menu item
+  status?: string;
 }
 
 const ProductsPage: React.FC = () => {
@@ -44,16 +44,16 @@ const ProductsPage: React.FC = () => {
       if (menusResponse.success && menusResponse.responseObject) {
         setMenus(menusResponse.responseObject);
       } else {
-        messageApi.error(menusResponse.message || 'Failed to fetch menus.');
+        messageApi.error(menusResponse.message || 'ไม่สามารถโหลดข้อมูลเมนูได้');
       }
 
       if (categoriesResponse.success && categoriesResponse.responseObject) {
         setCategories(categoriesResponse.responseObject);
       } else {
-        messageApi.error(categoriesResponse.message || 'Failed to fetch categories.');
+        messageApi.error(categoriesResponse.message || 'ไม่สามารถโหลดข้อมูลหมวดหมู่ได้');
       }
     } catch (error: any) {
-      messageApi.error('Error fetching data: ' + error.message);
+      messageApi.error('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ const ProductsPage: React.FC = () => {
   const handleAdd = () => {
     setEditingMenu(null);
     form.resetFields();
-    form.setFieldsValue({ stock: undefined }); // Explicitly clear stock
+    form.setFieldsValue({ stock: undefined });
     setIsModalVisible(true);
   };
 
@@ -78,17 +78,15 @@ const ProductsPage: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await updateMenu({ id, status: 'deleted' }); // Perform soft delete
+      const response = await updateMenu({ id, status: 'deleted' });
       if (response.success) {
-        messageApi.success('Menu item deleted successfully!');
+        messageApi.success('ลบสินค้าเรียบร้อยแล้ว!');
         fetchMenusAndCategories();
       } else {
-        console.error('Backend Error Response:', response);
-        messageApi.error(response.message || 'Failed to delete menu item.');
+        messageApi.error(response.message || 'ไม่สามารถลบสินค้าได้');
       }
     } catch (error: any) {
-      console.error('Frontend Catch Error:', error);
-      messageApi.error('Error deleting menu item: ' + error.message);
+      messageApi.error('เกิดข้อผิดพลาด: ' + error.message);
     }
   };
 
@@ -100,7 +98,7 @@ const ProductsPage: React.FC = () => {
 
       const payload = {
         ...values,
-        status: values.status || 'available', // Default to 'available' if not provided
+        status: values.status || 'available',
       };
 
       if (editingMenu) {
@@ -110,16 +108,14 @@ const ProductsPage: React.FC = () => {
       }
 
       if (response.success) {
-        messageApi.success(`Menu item ${editingMenu ? 'updated' : 'created'} successfully!`);
+        messageApi.success(`${editingMenu ? 'แก้ไข' : 'เพิ่ม'}สินค้าเรียบร้อยแล้ว!`);
         setIsModalVisible(false);
         fetchMenusAndCategories();
       } else {
-        console.error('Backend Error Response:', response);
-        messageApi.error(response.message || `Failed to ${editingMenu ? 'update' : 'create'} menu item.`);
+        messageApi.error(response.message || `ไม่สามารถ${editingMenu ? 'แก้ไข' : 'เพิ่ม'}สินค้าได้`);
       }
     } catch (error: any) {
-      console.error('Frontend Catch Error:', error);
-      messageApi.error('Error saving menu item: ' + error.message);
+      messageApi.error('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -131,33 +127,38 @@ const ProductsPage: React.FC = () => {
 
   const getTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
-      'HOT': '#ff4d4f',
-      'COLD': '#1890ff',
-      'FRAPPE': '#52c41a',
-      'default': '#8c8c8c'
+      'HOT': 'red',
+      'COLD': 'blue',
+      'FRAPPE': 'green',
+      'default': 'default'
     };
-    return colors[type.toUpperCase()] || colors['default'];
+    return colors[type?.toUpperCase()] || colors['default'];
   };
 
   return (
-    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
+    <div className="p-4 md:p-6 bg-coffee-cream min-h-screen">
       {contextHolder}
+
+      {/* Header */}
       <Card
-        style={{
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-          borderRadius: '12px',
-          marginBottom: '24px'
-        }}
+        className="!rounded-2xl !shadow-coffee-md !mb-6"
+        styles={{ body: { padding: '20px 24px' } }}
       >
         <Row justify="space-between" align="middle">
           <Col>
-            <Space align="center">
-              <CoffeeOutlined style={{ fontSize: '32px', color: '#8B4513' }} />
-              <div>
-                <Title level={2} style={{ margin: 0, color: '#262626' }}>จัดการเมนูและสินค้าในร้าน</Title>
-                <Text type="secondary">จัดการเมนูและสินค้าในร้าน</Text>
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-coffee-gradient flex items-center justify-center shadow-coffee-md">
+                <ShopOutlined className="text-2xl text-white" />
               </div>
-            </Space>
+              <div>
+                <Title level={2} className="!mb-0 !text-coffee-espresso">
+                  จัดการสินค้า
+                </Title>
+                <Text className="text-brand-text-secondary">
+                  จัดการเมนูและสินค้าในร้าน
+                </Text>
+              </div>
+            </div>
           </Col>
           <Col>
             <Button
@@ -165,14 +166,7 @@ const ProductsPage: React.FC = () => {
               size="large"
               icon={<PlusOutlined />}
               onClick={handleAdd}
-              style={{
-                borderRadius: '8px',
-                height: '48px',
-                paddingLeft: '24px',
-                paddingRight: '24px',
-                background: '#8B4513',
-                borderColor: '#8B4513'
-              }}
+              className="!rounded-xl !h-12 !px-6"
             >
               เพิ่มสินค้าใหม่
             </Button>
@@ -181,138 +175,117 @@ const ProductsPage: React.FC = () => {
       </Card>
 
       <Spin spinning={loading}>
-        <Tabs
-          defaultActiveKey={categories[0]?.id}
-          size="large"
-          style={{
-            background: 'white',
-            padding: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
-          }}
+        <Card
+          className="!rounded-2xl !shadow-coffee-md"
+          styles={{ body: { padding: '16px 24px 24px' } }}
         >
-          {categories.map(category => {
-            const categoryMenus = menus.filter(menu => menu.category_id === category.id && menu.status !== 'deleted');
-            return (
-              <Tabs.TabPane
-                tab={
-                  // <Badge count={categoryMenus.length} offset={[10, 0]} showZero>
-                    <span style={{ fontSize: '16px', padding: '0 8px' }}>
-                      {category.category_name} <span style={{color:'gray'}}>({categoryMenus.length})</span>
-                    </span>
-                  // </Badge>
-                }
-                key={category.id}
-              >
-                {categoryMenus.length === 0 ? (
+          <Tabs
+            defaultActiveKey={categories[0]?.id}
+            size="large"
+            items={categories.map(category => {
+              const categoryMenus = menus.filter(menu => menu.category_id === category.id && menu.status !== 'deleted');
+              return {
+                key: category.id,
+                label: (
+                  <span className="font-medium px-2">
+                    {category.category_name}
+                    <span className="text-brand-text-muted ml-2">({categoryMenus.length})</span>
+                  </span>
+                ),
+                children: categoryMenus.length === 0 ? (
                   <Empty
                     description="ยังไม่มีสินค้าในหมวดนี้"
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    style={{ padding: '60px 0' }}
+                    className="py-16"
                   >
-                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} className="!rounded-xl">
                       เพิ่มสินค้าแรก
                     </Button>
                   </Empty>
                 ) : (
-                  <Row gutter={[24, 24]} style={{ marginTop: '16px' }}>
+                  <Row gutter={[20, 20]} className="mt-4">
                     {categoryMenus.map(menu => (
                       <Col key={menu.id} xs={24} sm={12} md={8} lg={6}>
-                        {/* <Badge.Ribbon
-                          text={menu.type || 'สินค้า'}
-                          color={getTypeColor(menu.type || '')}
-                        > */}
-                          <Card
-                            hoverable
-                            style={{
-                              borderRadius: '12px',
-                              overflow: 'hidden',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                              transition: 'all 0.3s ease',
-                              minHeight: '200px'
-                            }}
-                            actions={[
+                        <Card
+                          hoverable
+                          className="!rounded-2xl !overflow-hidden !border-2 !border-transparent hover:!border-coffee-medium-roast transition-all duration-300"
+                          styles={{
+                            body: { padding: '16px' },
+                            actions: { borderTop: '1px solid #E8E2D9' }
+                          }}
+                          actions={[
+                            <Button
+                              type="text"
+                              icon={<EditOutlined />}
+                              onClick={() => handleEdit(menu)}
+                              className="!text-blue-500 hover:!text-blue-600"
+                            >
+                              แก้ไข
+                            </Button>,
+                            <Popconfirm
+                              title="ยืนยันการลบ?"
+                              description="คุณต้องการลบสินค้านี้หรือไม่?"
+                              onConfirm={() => handleDelete(menu.id)}
+                              okText="ใช่"
+                              cancelText="ไม่"
+                              okButtonProps={{ danger: true }}
+                            >
                               <Button
                                 type="text"
-                                icon={<EditOutlined />}
-                                onClick={() => handleEdit(menu)}
-                                style={{ color: '#1890ff' }}
+                                icon={<DeleteOutlined />}
+                                danger
                               >
-                                แก้ไข
-                              </Button>,
-                              <Popconfirm
-                                title="ยืนยันการลบ?"
-                                description="คุณต้องการลบเมนูนี้หรือไม่?"
-                                onConfirm={() => handleDelete(menu.id)}
-                                okText="ใช่"
-                                cancelText="ไม่"
-                                okButtonProps={{ danger: true }}
-                              >
-                                <Button
-                                  type="text"
-                                  icon={<DeleteOutlined />}
-                                  danger
-                                >
-                                  ลบ
-                                </Button>
-                              </Popconfirm>,
-                            ]}
-                          >
-                            <Card.Meta
-                              title={
-                                <div style={{
-                                  fontSize: '18px',
-                                  fontWeight: 600,
-                                  marginBottom: '12px',
-                                  color: '#262626'
-                                }}>
-                                  {menu.name}
-                                </div>
-                              }
-                              description={
-                                <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                                  {menu.description && (
-                                    <Text type="secondary" style={{ fontSize: '13px' }}>
-                                      {menu.description}
-                                    </Text>
-                                  )}
-                                  <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    marginTop: '8px',
-                                    paddingTop: '12px',
-                                    borderTop: '1px solid #f0f0f0'
-                                  }}>
-                                    <Text strong style={{ fontSize: '20px', color: '#8B4513' }}>
-                                      ฿{Number(menu.price).toFixed(2)}
-                                    </Text>
-                                    {menu.stock !== undefined && (
-                                      <Tag color={menu.stock > 10 ? 'success' : menu.stock > 0 ? 'warning' : 'error'}>
-                                        คงเหลือ: {menu.stock}
-                                      </Tag>
-                                    )}
-                                  </div>
-                                </Space>
-                              }
-                            />
-                          </Card>
-                        {/* </Badge.Ribbon> */}
+                                ลบ
+                              </Button>
+                            </Popconfirm>,
+                          ]}
+                        >
+                          <div className="mb-3">
+                            {menu.type && (
+                              <Tag color={getTypeColor(menu.type)} className="!rounded-md !mb-2">
+                                {menu.type}
+                              </Tag>
+                            )}
+                            <h3 className="text-lg font-semibold text-coffee-espresso line-clamp-2 min-h-[56px]">
+                              {menu.name}
+                            </h3>
+                          </div>
+                          {menu.description && (
+                            <Text type="secondary" className="text-sm line-clamp-2 block mb-3">
+                              {menu.description}
+                            </Text>
+                          )}
+                          <div className="flex justify-between items-center pt-3 border-t border-brand-border-light">
+                            <Text strong className="text-xl text-coffee-medium-roast">
+                              ฿{Number(menu.price).toFixed(0)}
+                            </Text>
+                            {menu.stock !== undefined && (
+                              <Tag color={menu.stock > 10 ? 'success' : menu.stock > 0 ? 'warning' : 'error'} className="!rounded-md">
+                                คงเหลือ: {menu.stock}
+                              </Tag>
+                            )}
+                          </div>
+                        </Card>
                       </Col>
                     ))}
                   </Row>
-                )}
-              </Tabs.TabPane>
-            );
-          })}
-        </Tabs>
+                )
+              };
+            })}
+          />
+        </Card>
       </Spin>
 
       <Modal
         title={
-          <Space>
-            <span>{editingMenu ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</span>
-          </Space>
+          <div className="flex items-center gap-3 pb-4 border-b border-brand-border-light">
+            <div className="w-10 h-10 rounded-xl bg-coffee-gradient flex items-center justify-center">
+              <CoffeeOutlined className="text-lg text-white" />
+            </div>
+            <span className="text-lg font-semibold text-coffee-espresso">
+              {editingMenu ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}
+            </span>
+          </div>
         }
         open={isModalVisible}
         onOk={handleOk}
@@ -321,51 +294,38 @@ const ProductsPage: React.FC = () => {
         width={600}
         okText={editingMenu ? 'บันทึก' : 'เพิ่มสินค้า'}
         cancelText="ยกเลิก"
-        okButtonProps={{
-          style: { background: '#8B4513', borderColor: '#8B4513' }
-        }}
+        className="coffee-modal"
       >
-        <Form form={form} layout="vertical" name="menu_form">
+        <Form form={form} layout="vertical" name="menu_form" className="mt-6">
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item
                 name="name"
-                label="ชื่อสินค้า"
-                rules={[{ required: true, message: 'กรุณากรอกชื่อสินค้า!' }]}
+                label={<span className="font-medium text-coffee-dark-roast">ชื่อสินค้า</span>}
+                rules={[{ required: true, message: 'กรุณากรอกชื่อสินค้า' }]}
               >
-                <Input
-                  placeholder="เช่น Espresso, Cappuccino"
-                  size="large"
-                />
+                <Input placeholder="เช่น Espresso, Cappuccino" size="large" className="!rounded-xl" />
               </Form.Item>
             </Col>
 
             <Col span={24}>
               <Form.Item
                 name="description"
-                label="รายละเอียด"
+                label={<span className="font-medium text-coffee-dark-roast">รายละเอียด</span>}
               >
-                <TextArea
-                  rows={3}
-                  placeholder="รายละเอียดสินค้า (ไม่บังคับ)"
-                />
+                <TextArea rows={3} placeholder="รายละเอียดสินค้า (ไม่บังคับ)" className="!rounded-xl" />
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item
                 name="category_id"
-                label="หมวดหมู่"
-                rules={[{ required: true, message: 'กรุณาเลือกหมวดหมู่!' }]}
+                label={<span className="font-medium text-coffee-dark-roast">หมวดหมู่</span>}
+                rules={[{ required: true, message: 'กรุณาเลือกหมวดหมู่' }]}
               >
-                <Select
-                  placeholder="เลือกหมวดหมู่"
-                  size="large"
-                >
+                <Select placeholder="เลือกหมวดหมู่" size="large" className="!rounded-xl">
                   {categories.map(cat => (
-                    <Option key={cat.id} value={cat.id}>
-                      {cat.category_name}
-                    </Option>
+                    <Option key={cat.id} value={cat.id}>{cat.category_name}</Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -374,13 +334,9 @@ const ProductsPage: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="type"
-                label="ประเภท"
+                label={<span className="font-medium text-coffee-dark-roast">ประเภท</span>}
               >
-                <Select
-                  placeholder="เลือกประเภท"
-                  size="large"
-                  allowClear
-                >
+                <Select placeholder="เลือกประเภท" size="large" allowClear className="!rounded-xl">
                   <Option value="HOT">HOT (ร้อน)</Option>
                   <Option value="COLD">COLD (เย็น)</Option>
                   <Option value="FRAPPE">FRAPPE (ปั่น)</Option>
@@ -391,8 +347,8 @@ const ProductsPage: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="price"
-                label="ราคา (บาท)"
-                rules={[{ required: true, message: 'กรุณากรอกราคา!' }]}
+                label={<span className="font-medium text-coffee-dark-roast">ราคา (บาท)</span>}
+                rules={[{ required: true, message: 'กรุณากรอกราคา' }]}
               >
                 <InputNumber
                   min={0}
@@ -401,6 +357,7 @@ const ProductsPage: React.FC = () => {
                   placeholder="0.00"
                   precision={2}
                   prefix="฿"
+                  className="!rounded-xl"
                 />
               </Form.Item>
             </Col>
@@ -408,13 +365,14 @@ const ProductsPage: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="stock"
-                label="จำนวนคงเหลือ"
+                label={<span className="font-medium text-coffee-dark-roast">จำนวนคงเหลือ</span>}
               >
                 <InputNumber
                   min={0}
                   style={{ width: '100%' }}
                   size="large"
                   placeholder="ไม่ระบุ"
+                  className="!rounded-xl"
                 />
               </Form.Item>
             </Col>
